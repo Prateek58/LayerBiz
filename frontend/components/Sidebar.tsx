@@ -17,11 +17,11 @@ const Sidebar: React.FC = () => {
     <div className="w-72 bg-[#0f172a] border-r border-slate-800 flex flex-col h-full select-none">
       <div className="p-6 flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <svg 
-            width="32" 
-            height="32" 
-            viewBox="0 0 40 40" 
-            fill="none" 
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 40 40"
+            fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className="text-orange-500"
           >
@@ -39,17 +39,16 @@ const Sidebar: React.FC = () => {
         <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-4 px-2">
           Project Explorer
         </h2>
-        
+
         <div className="space-y-1">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.id}
               href={item.path}
-              className={`w-full flex flex-col px-3 py-2.5 rounded-lg transition-all duration-200 group border ${
-                isActive(item.path)
+              className={`w-full flex flex-col px-3 py-2.5 rounded-lg transition-all duration-200 group border ${isActive(item.path)
                   ? 'bg-[#1e293b] text-slate-100 border-slate-700 shadow-sm'
                   : 'text-slate-400 hover:bg-[#1e293b]/50 hover:text-slate-300 border-transparent'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <i className={`fas ${item.icon} text-xs`}></i>

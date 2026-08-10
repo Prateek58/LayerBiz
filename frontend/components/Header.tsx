@@ -6,7 +6,7 @@ import { NAV_ITEMS } from '../constants';
 
 const Header = () => {
   const pathname = usePathname();
-  
+
   // Find current item based on path
   const currentItem = NAV_ITEMS.find(item => {
     if (item.path === '/') return pathname === '/';
@@ -22,7 +22,7 @@ const Header = () => {
         <i className="fas fa-chevron-right text-[8px] text-slate-300"></i>
         <span className="text-orange-600 font-black">{currentItem.name}</span>
       </nav>
-      
+
       <div className="ml-auto flex items-center gap-6">
         <div className="text-[10px] font-mono text-slate-400 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
@@ -30,7 +30,7 @@ const Header = () => {
         </div>
         <div className="h-6 w-px bg-slate-200"></div>
         <button className="text-slate-400 hover:text-orange-600 transition-colors">
-             <i className="fas fa-bell"></i>
+          <i className="fas fa-bell"></i>
         </button>
       </div>
     </header>

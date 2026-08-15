@@ -1,6 +1,13 @@
 import React from 'react';
+import { fetchAboutPage } from '@/lib/api';
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const aboutData = await fetchAboutPage();
+
+  if (!aboutData) {
+    return <div className="text-white p-12">Loading or Failed to load...</div>;
+  }
+
   return (
     <div className="flex-1 bg-[#0b1120] p-12 flex items-center justify-center">
       <div className="max-w-2xl w-full">
@@ -14,24 +21,21 @@ export default function AboutPage() {
             <div className="text-[10px] font-mono text-slate-500 ml-2 uppercase tracking-widest">About_LayerBiz.md</div>
           </div>
           <div className="p-10">
-            <h2 className="text-3xl font-bold text-white mb-6">The LayerBiz Protocol</h2>
+            <h2 className="text-3xl font-bold text-white mb-6">{aboutData.title}</h2>
             <div className="space-y-6 text-slate-400 font-mono text-sm leading-relaxed">
-              <p>
-                <span className="text-orange-500 font-bold">&gt;</span> We believe software is the fundamental layer of modern business. Our mission is to build specialized, high-performance micro-SaaS that solves complex problems with surgical precision.
-              </p>
-              <p>
-                <span className="text-orange-500 font-bold">&gt;</span> Founded by developers who value code quality, user privacy, and zero-bloat architecture. Every product in our ecosystem is built to be resilient and remarkably fast.
-              </p>
+              {aboutData.paragraphs?.map((paragraph: string, index: number) => (
+                <p key={index}>
+                  <span className="text-orange-500 font-bold">&gt;</span> {paragraph}
+                </p>
+              ))}
             </div>
             <div className="mt-10 grid grid-cols-2 gap-4">
-              <div className="bg-[#0f172a] p-4 rounded-xl border border-slate-800">
-                <div className="text-orange-500 font-bold text-lg mb-1">01</div>
-                <div className="text-white text-xs font-bold uppercase tracking-wider">Lean Systems</div>
-              </div>
-              <div className="bg-[#0f172a] p-4 rounded-xl border border-slate-800">
-                <div className="text-orange-500 font-bold text-lg mb-1">02</div>
-                <div className="text-white text-xs font-bold uppercase tracking-wider">Human Design</div>
-              </div>
+              {aboutData.features?.map((feature: any, index: number) => (
+                <div key={index} className="bg-[#0f172a] p-4 rounded-xl border border-slate-800">
+                  <div className="text-orange-500 font-bold text-lg mb-1">{feature.num}</div>
+                  <div className="text-white text-xs font-bold uppercase tracking-wider">{feature.title}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -39,3 +43,4 @@ export default function AboutPage() {
     </div>
   );
 }
+

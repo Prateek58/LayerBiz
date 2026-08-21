@@ -1,0 +1,43 @@
+name: Deploy Monorepo to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-backend:
+    name: Deploy Strapi Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: layerbiz-admin
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /home/layerbiz-admin/htdocs/admin.layerbiz.com/backend
+            git pull origin main
+            npm install
+            npm run build
+            pm2 reload layerbiz-backend
+  deploy-frontend:
+    name: Deploy Next.js Frontend
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: layerbiz
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /home/layerbiz/htdocs/layerbiz.com/frontend
+            git pull origin main
+            npm install
+            npm run build
+            pm2 reload layerbiz-frontend

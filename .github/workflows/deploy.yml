@@ -19,10 +19,13 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd /home/layerbiz-admin/htdocs/admin.layerbiz.com
-            git pull origin main
+            # Force clean git state so git pull never fails or merges local noise
+            git fetch origin main
+            git reset --hard origin/main
+            
             cd backend
             npm install
-            NODE_OPTIONS="--max-old-space-size=1536" npm run build
+            npm run build
             pm2 restart layerbiz-backend || pm2 start npm --name "layerbiz-backend" -- start
             pm2 save
 
@@ -40,13 +43,14 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd /home/layerbiz/htdocs/layerbiz.com
-            git pull origin main
+            # Force clean git state so git pull never fails or merges local noise
+            git fetch origin main
+            git reset --hard origin/main
+            
             cd frontend
             npm install
+            npm run build
             
-            # Run build with memory limits and disable CPU multithreading overhead
-            NODE_OPTIONS="--max-old-space-size=1536" NEXT_TELEMETRY_DISABLED=1 npm run build
-            
-            # Restart or start PM2 process
-            pm2 restart layerbiz-frontend || pm2 start npm --name "layerbiz-frontend" -- start -- -p 3000
+            # Force PM2 process reload to clear Next.js memory cache
+            pm2 reload layerbiz-frontend || pm2 start npm --name "layerbiz-frontend" -- start -- -p 3000
             pm2 save

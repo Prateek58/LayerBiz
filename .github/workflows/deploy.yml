@@ -18,12 +18,18 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            # Navigate to backend repository directory
             cd /home/layerbiz-admin/htdocs/admin.layerbiz.com
             git pull origin main
+            
+            # Move to Strapi folder, install dependencies, and build
             cd backend
             npm install
             npm run build
+            
+            # Restart or Start PM2 process
             pm2 restart layerbiz-backend || pm2 start npm --name "layerbiz-backend" -- start
+            pm2 save
 
   deploy-frontend:
     name: Deploy Next.js Frontend
@@ -38,10 +44,15 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            # Navigate to frontend repository directory
             cd /home/layerbiz/htdocs/layerbiz.com
             git pull origin main
+            
+            # Move to Next.js folder, install dependencies, and run production build
             cd frontend
             npm install
-            rm -rf .next
             npm run build
+            
+            # Restart PM2 process safely to bind port 3000
             pm2 restart layerbiz-frontend || pm2 start npm --name "layerbiz-frontend" -- start -- -p 3000
+            pm2 save

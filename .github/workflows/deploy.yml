@@ -1,4 +1,4 @@
-name: Deploy Frontend Only
+name: Deploy Frontend Fresh Loop
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  deploy-frontend:
-    name: Deploy Next.js Frontend
+  run-fresh-frontend-deployment:
+    name: Clean Deployment NextJS
     runs-on: ubuntu-latest
     steps:
       - name: Deploy Frontend via SSH
@@ -18,33 +18,33 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Enable strict terminal tracing
+            # 1. Strict execution log tracking active
             set -xe
             
-            # 2. Inject explicit NVM paths for the layerbiz user
+            # 2. Re-map explicit system path contexts
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
             
-            # 3. Enter target workspace folder (Fixed Typo)
-            cd /home/layerbiz/htdocs/://layerbiz.com
+            # 3. Use absolute double-quoted literal path string maps
+            cd "/home/layerbiz/htdocs/://layerbiz.com"
             
-            # 4. Pull fresh repository changes
+            # 4. Wipe out git state tracking configurations
             git fetch --all
             git reset --hard origin/main
             
-            # 5. Purge the old build folder cache completely
+            # 5. Destroy compilation matrices entirely
             rm -rf .next
             
-            # 6. Install dependencies and trigger fresh production compilation
+            # 6. Execute direct fresh workspace compilation 
             npm install
             npm run build
             
-            # 7. Mirror asset structures required by standalone server.js
+            # 7. Safe static mapping structures
             mkdir -p .next/standalone/.next/static
             cp -r .next/static/. .next/standalone/.next/static/
             
-            # 8. Force hard-kill active PM2 threads to clear RAM states
+            # 8. Flush process memory allocation completely
             pm2 delete layerbiz-frontend || true
             pm2 kill || true
             
@@ -52,12 +52,9 @@ jobs:
             PORT=3000 HOSTNAME=127.0.0.1 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
             pm2 save
             
-            # 10. DIAGNOSTIC PRINT: Wait 3 seconds and print the runtime logs directly to GitHub console
+            # 10. Wait and log out state prints right here
             sleep 3
             pm2 list
             
-            echo "=== CURRENT APPLICATION ERROR LOGS ==="
+            echo "=== RUNTIME LOG DUMPS ==="
             cat $HOME/.pm2/logs/layerbiz-frontend-error.log | tail -n 20 || true
-            
-            echo "=== CURRENT APPLICATION OUTPUT LOGS ==="
-            cat $HOME/.pm2/logs/layerbiz-frontend-out.log | tail -n 20 || true

@@ -18,6 +18,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
+
             cd /home/layerbiz-admin/htdocs/admin.layerbiz.com
             git fetch --all
             git reset --hard origin/main
@@ -43,38 +47,35 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Load your user's specific Node/NVM profile environment directly
+            # 1. Load exact Node profile paths
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
 
+            # 2. Sync repository code
             cd /home/layerbiz/htdocs/layerbiz.com
             git fetch --all
             git reset --hard origin/main
             
             cd frontend
             
-            # 2. Hard purge the old build folder cache completely
+            # 3. Clean and build fresh production standalone bundle
             rm -rf .next
-            
             npm install
             npm run build
             
-            # 3. Mirror asset structures required by standalone server.js
-            mkdir -p .next/standalone/frontend/.next/static
-            cp -r .next/static/. .next/standalone/frontend/.next/static/
+            # 4. Map static asset requirements relative to verified base paths
+            mkdir -p .next/standalone/.next/static
+            cp -r .next/static/. .next/standalone/.next/static/
             
-            # 4. Completely clear old PM2 processes from memory
+            # 5. Flush old process memory states out of RAM
             pm2 delete layerbiz-frontend || true
             pm2 kill || true
             
-            # 5. Start the standalone script binary directly to bind strictly to CloudPanel's proxy
-            PORT=3000 HOSTNAME=127.0.0.1 pm2 start .next/standalone/frontend/server.js --name "layerbiz-frontend"
+            # 6. FIXED LAUNCHER: Target the true server path discovered in logs
+            PORT=3000 HOSTNAME=127.0.0.1 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
             pm2 save
             
-            # 6. DIAGNOSTIC LOGS: Wait 3 seconds and print the runtime errors directly to GitHub console
-            sleep 3
+            # 7. Print confirmation list
+            sleep 2
             pm2 list
-            
-            echo "=== CURRENT APPLICATION ERROR LOGS ==="
-            cat $HOME/.pm2/logs/layerbiz-frontend-error.log | tail -n 20 || true

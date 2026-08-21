@@ -45,27 +45,25 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Load correct Node/PM2 environments for headless shell
+            # 1. Force load the Node environment paths
             source $HOME/.bashrc || true
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$HOME/.local/bin:$PATH"
             
             cd /home/layerbiz/htdocs/://layerbiz.com
             
-            # 2. Reset codebase to align with main
+            # 2. Sync codebase with git main branch
             git fetch --all
             git reset --hard origin/main
             
-            # 3. Clean cache and compile fresh production build
+            # 3. Purge cache and compile fresh production build
             rm -rf .next
             npm install
             npm run build
             
-            # 4. Map static assets into the standalone directory structure
+            # 4. Map static assets into standalone folder
             mkdir -p .next/standalone/.next/static
             cp -r .next/static/. .next/standalone/.next/static/
-            cp -r public/. .next/standalone/public/ || true
             
-            # 5. Flush old runner states and execute the verified standalone path
-            pm2 delete layerbiz-frontend || true
-            PORT=3000 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
+            # 5. CloudPanel Standard PM2 Execution Core
+            pm2 restart layerbiz-frontend || pm2 start npm --name "layerbiz-frontend" -- start
             pm2 save

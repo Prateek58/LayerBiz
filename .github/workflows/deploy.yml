@@ -18,23 +18,22 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Load Node environment for layerbiz-admin user
+            # 1. Load exact Node/NVM paths for backend user
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
 
-            # 2. Navigate and pull down backend code changes
             cd /home/layerbiz-admin/htdocs/://layerbiz.com
             git fetch --all
             git reset --hard origin/main
             
-            # 3. Clean install and compile Strapi production build
             cd backend
             npm install
             npm run build
             
-            # 4. Cycle process safely via PM2
-            pm2 restart layerbiz-backend || pm2 start npm --name "layerbiz-backend" -- start
+            # Restart Strapi backend
+            pm2 delete layerbiz-backend || true
+            pm2 start npm --name "layerbiz-backend" -- start
             pm2 save
 
   deploy-frontend:
@@ -50,32 +49,33 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Load exact Node/NVM environment for layerbiz site user
+            # 1. Load exact Node/NVM paths for frontend user
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
             
-            # 2. Navigate to the absolute correct folder path (Fixed typo)
+            # 2. Enter exact directory
             cd /home/layerbiz/htdocs/://layerbiz.com
             
-            # 3. Force match codebase state exactly with main branch
+            # 3. Pull down pure repository changes
             git fetch --all
             git reset --hard origin/main
             
-            # 4. Hard purge the old build folder cache completely
+            # 4. Completely wipe the Next.js cache folder out of existence
             rm -rf .next
             
-            # 5. Install dependencies and trigger a fresh production compilation
+            # 5. Compile the new standalone distribution production build
             npm install
             npm run build
             
-            # 6. Map static asset requirements inside standalone folder
+            # 6. Map internal static assets required by Next.js standalone binary
             mkdir -p .next/standalone/.next/static
             cp -r .next/static/. .next/standalone/.next/static/
             
-            # 7. Completely clear any old conflicting PM2 processes out of memory
+            # 7. CRITICAL FIX: Kill PM2 completely to clear cached V8 engine instances
             pm2 delete layerbiz-frontend || true
+            pm2 kill || true
             
-            # 8. Start the site via CloudPanel's expected PM2 command (Password-free)
-            PORT=3000 pm2 start npm --name "layerbiz-frontend" -- start
+            # 8. Start the app cleanly using CloudPanel's official formatting
+            PORT=3000 HOSTNAME=127.0.0.1 pm2 start npm --name "layerbiz-frontend" -- start
             pm2 save

@@ -26,7 +26,7 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
             
-            # 3. Enter target workspace folder
+            # 3. Enter target workspace folder (Fixed Typo)
             cd /home/layerbiz/htdocs/://layerbiz.com
             
             # 4. Pull fresh repository changes

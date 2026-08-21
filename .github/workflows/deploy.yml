@@ -18,22 +18,18 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Load Node/NVM environment for non-interactive SSH sessions
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+            # Force the non-interactive shell to act as a login shell to load Node/PM2 paths
+            source $HOME/.bashrc || true
+            export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$HOME/.local/bin:$PATH"
 
-            # 2. Navigate and update code
-            cd /home/layerbiz-admin/htdocs/://layerbiz.com
+            cd /home/layerbiz-admin/htdocs/admin.layerbiz.com
             git fetch --all
             git reset --hard origin/main
             
-            # 3. Build Strapi
             cd backend
             npm install
             npm run build
             
-            # 4. Restart Strapi Process
             pm2 restart layerbiz-backend || pm2 start npm --name "layerbiz-backend" -- start
             pm2 save
 
@@ -50,31 +46,19 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Load Node/NVM environment for the layerbiz user
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
-
-            # 2. Navigate and update code
-            cd /home/layerbiz/htdocs/layerbiz.com
+            # Force the non-interactive shell to load layerbiz user's specific Node/PM2 paths
+            source $HOME/.bashrc || true
+            
+            cd /home/layerbiz/htdocs/layerbiz.com/frontend
+            
+            # Fetch and align git tree
             git fetch --all
             git reset --hard origin/main
             
-            cd frontend
-            
-            # 3. Flush old Next.js build cache completely
-            rm -rf .next
-            
-            # 4. Install dependencies and build
+            # Reinstall and force build identical to your manual fix
             npm install
             npm run build
             
-            # 5. Safe structure creation for Next.js standalone engine
-            mkdir -p .next/standalone/.next/
-            cp -r .next/static .next/standalone/.next/
-            cp -r public .next/standalone/ || true
-            
-            # 6. Delete old process to clear V8 instance memory cache and restart fresh
-            pm2 delete layerbiz-frontend || true
-            PORT=3000 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
+            # Use CloudPanel's native standard way to start/restart Next.js via PM2
+            PORT=3000 pm2 restart layerbiz-frontend || PORT=3000 pm2 start npm --name "layerbiz-frontend" -- start
             pm2 save

@@ -18,6 +18,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            set -xe
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
@@ -47,31 +48,45 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Load your user's specific Node/NVM profile environment directly
+            # 1. Enable rigorous tracking outputs
+            set -xe
+            
+            # 2. Inject environment node boundaries
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
             
-            # 2. Navigate to the folder path
+            # 3. Enter target workspace folder
             cd /home/layerbiz/htdocs/://layerbiz.com
             
-            # 3. Pull down repository changes
+            # 4. Refresh tracking points
             git fetch --all
             git reset --hard origin/main
             
-            # 4. Clean out old cached files and build fresh compilation bundle
+            # 5. Destroy static caching folders
             rm -rf .next
+            
+            # 6. Execute fresh compilation matrices
             npm install
             npm run build
             
-            # 5. Mirror asset structures into standalone destination
+            # 7. Mirror asset structures into standalone target
             mkdir -p .next/standalone/.next/static
             cp -r .next/static/. .next/standalone/.next/static/
             
-            # 6. Completely clear old PM2 processes from memory
+            # 8. Force hard-kill active PM2 threads to clear RAM states
             pm2 delete layerbiz-frontend || true
             pm2 kill || true
             
-            # 7. Fixed YAML formatting syntax mapping rule
-            env PORT=3000 HOSTNAME=127.0.0.1 pm2 start ".next/standalone/server.js" --name "layerbiz-frontend"
+            # 9. Clean execution boot targeting the raw binary directly
+            PORT=3000 HOSTNAME=127.0.0.1 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
             pm2 save
+            
+            # 10. DIAGNOSTIC PRINT: Wait 3 seconds and print the runtime logs directly to GitHub console
+            sleep 3
+            pm2 list
+            pm2 info layerbiz-frontend || true
+            
+            echo "=== CURRENT APPLICATION LOG DUMP ==="
+            cat $HOME/.pm2/logs/layerbiz-frontend-error.log | tail -n 20 || true
+            cat $HOME/.pm2/logs/layerbiz-frontend-out.log | tail -n 20 || true

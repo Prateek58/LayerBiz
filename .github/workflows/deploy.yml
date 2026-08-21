@@ -1,4 +1,4 @@
-name: Deploy Monorepo to VPS
+name: Deploy Frontend Only
 
 on:
   push:
@@ -6,39 +6,9 @@ on:
       - main
 
 jobs:
-  deploy-backend:
-    name: Deploy Strapi Backend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy Backend via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: layerbiz-admin
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            set -xe
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
-
-            cd /home/layerbiz-admin/htdocs/://layerbiz.com
-            git fetch --all
-            git reset --hard origin/main
-            
-            cd backend
-            npm install
-            npm run build
-            
-            pm2 delete layerbiz-backend || true
-            pm2 start npm --name "layerbiz-backend" -- start
-            pm2 save
-
   deploy-frontend:
     name: Deploy Next.js Frontend
     runs-on: ubuntu-latest
-    needs: deploy-backend
     steps:
       - name: Deploy Frontend via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -48,10 +18,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Enable rigorous tracking outputs
+            # 1. Enable strict terminal tracing
             set -xe
             
-            # 2. Inject environment node boundaries
+            # 2. Inject explicit NVM paths for the layerbiz user
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
@@ -59,18 +29,18 @@ jobs:
             # 3. Enter target workspace folder
             cd /home/layerbiz/htdocs/://layerbiz.com
             
-            # 4. Refresh tracking points
+            # 4. Pull fresh repository changes
             git fetch --all
             git reset --hard origin/main
             
-            # 5. Destroy static caching folders
+            # 5. Purge the old build folder cache completely
             rm -rf .next
             
-            # 6. Execute fresh compilation matrices
+            # 6. Install dependencies and trigger fresh production compilation
             npm install
             npm run build
             
-            # 7. Mirror asset structures into standalone target
+            # 7. Mirror asset structures required by standalone server.js
             mkdir -p .next/standalone/.next/static
             cp -r .next/static/. .next/standalone/.next/static/
             
@@ -85,8 +55,9 @@ jobs:
             # 10. DIAGNOSTIC PRINT: Wait 3 seconds and print the runtime logs directly to GitHub console
             sleep 3
             pm2 list
-            pm2 info layerbiz-frontend || true
             
-            echo "=== CURRENT APPLICATION LOG DUMP ==="
+            echo "=== CURRENT APPLICATION ERROR LOGS ==="
             cat $HOME/.pm2/logs/layerbiz-frontend-error.log | tail -n 20 || true
+            
+            echo "=== CURRENT APPLICATION OUTPUT LOGS ==="
             cat $HOME/.pm2/logs/layerbiz-frontend-out.log | tail -n 20 || true

@@ -18,7 +18,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Load exact Node/NVM paths for backend user
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
@@ -31,7 +30,6 @@ jobs:
             npm install
             npm run build
             
-            # Restart Strapi backend
             pm2 delete layerbiz-backend || true
             pm2 start npm --name "layerbiz-backend" -- start
             pm2 save
@@ -49,33 +47,31 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Load exact Node/NVM paths for frontend user
+            # 1. Load your user's specific Node/NVM profile environment directly
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
             
-            # 2. Enter exact directory
+            # 2. Navigate to the folder path
             cd /home/layerbiz/htdocs/://layerbiz.com
             
-            # 3. Pull down pure repository changes
+            # 3. Pull down repository changes
             git fetch --all
             git reset --hard origin/main
             
-            # 4. Completely wipe the Next.js cache folder out of existence
+            # 4. Clean out old cached files and build fresh compilation bundle
             rm -rf .next
-            
-            # 5. Compile the new standalone distribution production build
             npm install
             npm run build
             
-            # 6. Map internal static assets required by Next.js standalone binary
+            # 5. Mirror asset structures into standalone destination
             mkdir -p .next/standalone/.next/static
             cp -r .next/static/. .next/standalone/.next/static/
             
-            # 7. CRITICAL FIX: Kill PM2 completely to clear cached V8 engine instances
+            # 6. Completely clear old PM2 processes from memory
             pm2 delete layerbiz-frontend || true
             pm2 kill || true
             
-            # 8. Start the app cleanly using CloudPanel's official formatting
-            PORT=3000 HOSTNAME=127.0.0.1 pm2 start npm --name "layerbiz-frontend" -- start
+            # 7. Fixed YAML formatting syntax mapping rule
+            env PORT=3000 HOSTNAME=127.0.0.1 pm2 start ".next/standalone/server.js" --name "layerbiz-frontend"
             pm2 save

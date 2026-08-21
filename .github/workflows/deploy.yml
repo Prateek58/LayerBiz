@@ -45,25 +45,28 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Map system profile paths
             source $HOME/.bashrc || true
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$HOME/.local/bin:$PATH"
             
             cd /home/layerbiz/htdocs/://layerbiz.com
             
-            # 2. Match repository branch state
+            # 1. Update the code state
             git fetch --all
             git reset --hard origin/main
             
-            # 3. Clean and build fresh production files
+            # 2. Hard purge the old build folder cache completely
             rm -rf .next
+            
+            # 3. Compile a fresh production build
             npm install
             npm run build
             
-            # 4. Sync standalone engine asset layers
+            # 4. Map static asset requirements inside standalone folder
             mkdir -p .next/standalone/.next/static
             cp -r .next/static/. .next/standalone/.next/static/
             
-            # 5. Zero-Downtime Reload using direct file paths (Bypasses 'npm start' caching loop)
-            PORT=3000 HOSTNAME=127.0.0.1 pm2 restart layerbiz-frontend || PORT=3000 HOSTNAME=127.0.0.1 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
-            pm2 save
+            # 5. Clean up old PM2 processes if any are still lingering
+            pm2 delete layerbiz-frontend || true
+            
+            # 6. Force a hard system reload (Wipes out memory cache 100%)
+            sudo systemctl restart layerbiz-frontend

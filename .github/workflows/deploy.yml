@@ -1,4 +1,4 @@
-name: Deploy Frontend Fresh Loop
+name: Deploy Monorepo to VPS
 
 on:
   push:
@@ -6,9 +6,34 @@ on:
       - main
 
 jobs:
-  run-fresh-frontend-deployment:
-    name: Clean Deployment NextJS
+  deploy-backend:
+    name: Deploy Strapi Backend
     runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Backend via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: layerbiz-admin
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /home/layerbiz-admin/htdocs/admin.layerbiz.com
+            git fetch --all
+            git reset --hard origin/main
+            
+            cd backend
+            npm install
+            npm run build
+            
+            pm2 delete layerbiz-backend || true
+            pm2 start npm --name "layerbiz-backend" -- start
+            pm2 save
+
+  deploy-frontend:
+    name: Deploy Next.js Frontend
+    runs-on: ubuntu-latest
+    needs: deploy-backend
     steps:
       - name: Deploy Frontend via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -18,43 +43,38 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Strict execution log tracking active
-            set -xe
-            
-            # 2. Re-map explicit system path contexts
+            # 1. Load your user's specific Node/NVM profile environment directly
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$PATH"
-            
-            # 3. Use absolute double-quoted literal path string maps
-            cd "/home/layerbiz/htdocs/://layerbiz.com"
-            
-            # 4. Wipe out git state tracking configurations
+
+            cd /home/layerbiz/htdocs/layerbiz.com
             git fetch --all
             git reset --hard origin/main
             
-            # 5. Destroy compilation matrices entirely
+            cd frontend
+            
+            # 2. Hard purge the old build folder cache completely
             rm -rf .next
             
-            # 6. Execute direct fresh workspace compilation 
             npm install
             npm run build
             
-            # 7. Safe static mapping structures
-            mkdir -p .next/standalone/.next/static
-            cp -r .next/static/. .next/standalone/.next/static/
+            # 3. Mirror asset structures required by standalone server.js
+            mkdir -p .next/standalone/frontend/.next/static
+            cp -r .next/static/. .next/standalone/frontend/.next/static/
             
-            # 8. Flush process memory allocation completely
+            # 4. Completely clear old PM2 processes from memory
             pm2 delete layerbiz-frontend || true
             pm2 kill || true
             
-            # 9. Clean execution boot targeting the raw binary directly
-            PORT=3000 HOSTNAME=127.0.0.1 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
+            # 5. Start the standalone script binary directly to bind strictly to CloudPanel's proxy
+            PORT=3000 HOSTNAME=127.0.0.1 pm2 start .next/standalone/frontend/server.js --name "layerbiz-frontend"
             pm2 save
             
-            # 10. Wait and log out state prints right here
+            # 6. DIAGNOSTIC LOGS: Wait 3 seconds and print the runtime errors directly to GitHub console
             sleep 3
             pm2 list
             
-            echo "=== RUNTIME LOG DUMPS ==="
+            echo "=== CURRENT APPLICATION ERROR LOGS ==="
             cat $HOME/.pm2/logs/layerbiz-frontend-error.log | tail -n 20 || true

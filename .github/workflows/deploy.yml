@@ -18,11 +18,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # Force the non-interactive shell to act as a login shell to load Node/PM2 paths
             source $HOME/.bashrc || true
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$HOME/.local/bin:$PATH"
 
-            cd /home/layerbiz-admin/htdocs/admin.layerbiz.com
+            cd /home/layerbiz-admin/htdocs/://layerbiz.com
             git fetch --all
             git reset --hard origin/main
             
@@ -46,19 +45,27 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # Force the non-interactive shell to load layerbiz user's specific Node/PM2 paths
+            # 1. Load correct Node/PM2 environments for headless shell
             source $HOME/.bashrc || true
+            export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$HOME/.local/bin:$PATH"
             
-            cd /home/layerbiz/htdocs/layerbiz.com/frontend
+            cd /home/layerbiz/htdocs/://layerbiz.com
             
-            # Fetch and align git tree
+            # 2. Reset codebase to align with main
             git fetch --all
             git reset --hard origin/main
             
-            # Reinstall and force build identical to your manual fix
+            # 3. Clean cache and compile fresh production build
+            rm -rf .next
             npm install
             npm run build
             
-            # Use CloudPanel's native standard way to start/restart Next.js via PM2
-            PORT=3000 pm2 restart layerbiz-frontend || PORT=3000 pm2 start npm --name "layerbiz-frontend" -- start
+            # 4. Map static assets into the standalone directory structure
+            mkdir -p .next/standalone/.next/static
+            cp -r .next/static/. .next/standalone/.next/static/
+            cp -r public/. .next/standalone/public/ || true
+            
+            # 5. Flush old runner states and execute the verified standalone path
+            pm2 delete layerbiz-frontend || true
+            PORT=3000 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
             pm2 save

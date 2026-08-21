@@ -25,7 +25,7 @@ const Hero: React.FC = () => {
         </h1>
 
         <p className="text-xl text-slate-400 mb-10 leading-relaxed max-w-2xl">
-          LayerBiz 2 is a venture studio specializing in high-performance micro-SaaS.
+          LayerBiz 3 is a venture studio specializing in high-performance micro-SaaS.
           We bridge the gap between complex engineering and elegant user experiences.
         </p>
 

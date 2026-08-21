@@ -45,25 +45,25 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # 1. Force load the Node environment paths
+            # 1. Map system profile paths
             source $HOME/.bashrc || true
             export PATH="$HOME/.nvm/versions/node/$(node -v)/bin:$HOME/.local/bin:$PATH"
             
             cd /home/layerbiz/htdocs/://layerbiz.com
             
-            # 2. Sync codebase with git main branch
+            # 2. Match repository branch state
             git fetch --all
             git reset --hard origin/main
             
-            # 3. Purge cache and compile fresh production build
+            # 3. Clean and build fresh production files
             rm -rf .next
             npm install
             npm run build
             
-            # 4. Map static assets into standalone folder
+            # 4. Sync standalone engine asset layers
             mkdir -p .next/standalone/.next/static
             cp -r .next/static/. .next/standalone/.next/static/
             
-            # 5. CloudPanel Standard PM2 Execution Core
-            pm2 restart layerbiz-frontend || pm2 start npm --name "layerbiz-frontend" -- start
+            # 5. Zero-Downtime Reload using direct file paths (Bypasses 'npm start' caching loop)
+            PORT=3000 HOSTNAME=127.0.0.1 pm2 restart layerbiz-frontend || PORT=3000 HOSTNAME=127.0.0.1 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
             pm2 save

@@ -35,10 +35,12 @@ jobs:
             npm install
             npm run build
             
-            # 4. Map static assets into standalone structure
+            # 4. Map static assets and env into standalone structure
             mkdir -p .next/standalone/.next
             cp -r .next/static .next/standalone/.next/
             cp -r public .next/standalone/ || true
+            cp .env.production .next/standalone/.env.production || true
+            cp .env.local .next/standalone/.env.local || true
             
             # 5. Flush old process RAM cache and start standalone server on port 3000
             pm2 delete layerbiz-frontend || true

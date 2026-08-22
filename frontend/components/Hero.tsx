@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import LogoBlockAnimator from './LogoBlockAnimator';
 
 const Hero: React.FC = () => {
   return (
@@ -11,6 +12,9 @@ const Hero: React.FC = () => {
       ></div>
 
       <div className="max-w-4xl mx-auto relative z-10 w-full">
+        {/* Animated Kinetic Logo Blocks Area */}
+        <LogoBlockAnimator />
+
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-6">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>

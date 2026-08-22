@@ -11,3 +11,66 @@ body {
 .prose :where(pre) {
   background-color: transparent !important;
 }
+
+/* Stepped Kinetic Wave Cascade Animations (2s Cycle) */
+@keyframes stepped-tile-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.85;
+  }
+  30% {
+    transform: translate(-3px, 3px) scale(1.18);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(1px, -1px) scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+@keyframes stepped-tile-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.9;
+  }
+  45% {
+    transform: translate(0px, -4px) scale(1.22);
+    opacity: 1;
+  }
+  75% {
+    transform: translate(0px, 1px) scale(0.96);
+    opacity: 0.85;
+  }
+}
+
+@keyframes stepped-tile-3 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.95;
+  }
+  60% {
+    transform: translate(3px, -3px) scale(1.25);
+    opacity: 1;
+  }
+  85% {
+    transform: translate(-1px, 1px) scale(0.97);
+    opacity: 0.9;
+  }
+}
+
+.animate-stepped-tile-1 {
+  animation: stepped-tile-1 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
+}
+
+.animate-stepped-tile-2 {
+  animation: stepped-tile-2 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 0.15s;
+  will-change: transform, opacity;
+}
+
+.animate-stepped-tile-3 {
+  animation: stepped-tile-3 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 0.3s;
+  will-change: transform, opacity;
+}

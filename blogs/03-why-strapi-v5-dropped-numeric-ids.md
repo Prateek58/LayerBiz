@@ -25,16 +25,11 @@ If your frontend routes rely on numeric IDs like `/blog/12`, your site will inev
 
 In Strapi v5, the core engineering team introduced the **Document Service**. This architecture decouples a conceptual "document" from its underlying physical SQL database rows.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 Document Service (documentId)               │
-│                 "the-architecture-of-edge"                  │
-├──────────────────────────────┬──────────────────────────────┤
-│ Draft Version (DB row: #14)  │ Published Version (DB row: #15)
-│ status: draft                │ status: published            │
-│ updatedAt: 12:45:00          │ publishedAt: 12:45:10        │
-└──────────────────────────────┴──────────────────────────────┘
-```
+| Document State | Physical Database Row | Behavior |
+| :--- | :--- | :--- |
+| **Draft Version** | DB Row `#14` (`status: draft`) | Staged changes visible only in Admin |
+| **Published Version** | DB Row `#15` (`status: published`) | Live content served to public API consumers |
+| **Canonical Identifier** | `documentId` / `slug` | Permanent semantic key across all drafts |
 
 When you edit an article with **Draft & Publish** enabled:
 1. Strapi generates a temporary draft row with its own internal SQL auto-increment ID (`#14`).

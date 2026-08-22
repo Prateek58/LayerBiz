@@ -27,16 +27,10 @@ Spam bots rarely use full headless browsers; they use fast automated HTTP parser
 
 When a bot encounters a form, it attempts to maximize its payload delivery by filling out **every input field it discovers** (names, emails, comments, and extra fields).
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 Human vs. Bot Form Interaction               │
-├──────────────────────────────┬──────────────────────────────┤
-│ Real Human User              │ Automated Spam Bot           │
-│ • Sees only visible inputs   │ • Inspects raw HTML DOM      │
-│ • Takes 3-10 seconds to type │ • Fills all fields instantly │
-│ • Leaves hidden fields blank │ • Submits in < 300ms         │
-└──────────────────────────────┴──────────────────────────────┘
-```
+| Visitor Type | Form Interaction Pattern | Submission Latency |
+| :--- | :--- | :--- |
+| **Real Human User** | Sees visible inputs only; leaves hidden traps empty | 3 to 10 seconds |
+| **Automated Spam Bot** | Ingests all DOM inputs; fills every hidden field | Sub-500 milliseconds |
 
 ---
 

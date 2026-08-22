@@ -21,20 +21,11 @@ By building on a **Decoupled Venture Studio Architecture**, you create a unified
 
 ## The 3-Tier Venture Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    LayerBiz Ecosystem                       │
-├──────────────────────────────┬──────────────────────────────┤
-│ 1. Frontend Experience       │ Next.js 14 App Router        │
-│    (UI, Dynamic MD, SEO)     │ Fast Edge Rendering          │
-├──────────────────────────────┼──────────────────────────────┤
-│ 2. CMS & CRM Engine          │ Strapi v5 Headless API       │
-│    (Schemas, Lifecycles, DB) │ Centralized Content Hub      │
-├──────────────────────────────┼──────────────────────────────┤
-│ 3. Real-Time Alert Layer     │ Hybrid Nodemailer Gateway    │
-│    (Gmail SMTP App Password) │ Instant Founder Inbox Sync   │
-└──────────────────────────────┴──────────────────────────────┘
-```
+| Architectural Tier | Technology Stack | Responsibility |
+| :--- | :--- | :--- |
+| **1. Frontend Experience** | Next.js 14 App Router (Tailwind) | Fast Edge SSR, Dynamic Markdown, SEO Engines |
+| **2. CMS & CRM Engine** | Strapi v5 Headless API | Document Services, Schema Relations, Lead Storage |
+| **3. Real-Time Alert Layer** | Hybrid Nodemailer Gateway | Instant Founder Sync via Private SMTP Credentials |
 
 ---
 
@@ -73,7 +64,7 @@ export async function POST(req: Request) {
     from: `"LayerBiz Hub" <${process.env.EMAIL_USER}>`,
     to: process.env.NOTIFICATION_EMAIL,
     replyTo: email,
-    subject: `🔥 New Contact Inquiry: ${name}`,
+    subject: `New Contact Inquiry: ${name}`,
     html: `<div style="font-family: sans-serif; background: #0f172a; color: #fff; padding: 20px;">
       <h2>Inquiry from ${name} (${email})</h2>
       <p style="background: #1e293b; padding: 15px; border-radius: 8px;">${message}</p>

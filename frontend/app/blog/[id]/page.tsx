@@ -2,6 +2,7 @@ import { fetchBlogPost, fetchBlogPosts } from '@/lib/api';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Metadata } from 'next';
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -100,7 +101,7 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
       ? post.tags
       : [];
 
-  // Schema.org BlogPosting Structured Data for Google Rich Snippets
+  // Schema.org BlogPosting Structured Data for Google Rich Results
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -166,51 +167,113 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
             </div>
           </header>
 
-          <div className="prose prose-invert prose-pre:bg-transparent prose-pre:p-0 max-w-none space-y-6 text-slate-400 text-sm sm:text-base leading-loose">
+          <div className="prose prose-invert prose-pre:bg-transparent prose-pre:p-0 max-w-none space-y-6 text-slate-300 text-sm sm:text-base leading-loose">
             {post.content ? (
               <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
                 components={{
                   em({ children, ...props }: any) {
                     return (
-                      <span className="text-base sm:text-lg text-slate-300 italic" style={{ fontStyle: 'italic' }} {...props}>
+                      <span className="text-base sm:text-lg text-slate-200 italic" style={{ fontStyle: 'italic' }} {...props}>
                         {children}
                       </span>
                     );
                   },
-                  pre({ children }: any) {
-                    return <div className="not-prose overflow-x-auto">{children}</div>;
+                  blockquote({ children }: any) {
+                    return (
+                      <blockquote className="border-l-4 border-orange-500 bg-slate-900/60 pl-5 pr-4 py-3 my-6 rounded-r-xl italic text-slate-300 font-sans not-prose">
+                        {children}
+                      </blockquote>
+                    );
                   },
-                  code({ node, inline, className, children, ...props }: any) {
+                  table({ children }: any) {
+                    return (
+                      <div className="my-6 overflow-x-auto rounded-xl border border-slate-800 bg-[#0b1120]/90 shadow-xl not-prose">
+                        <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                          {children}
+                        </table>
+                      </div>
+                    );
+                  },
+                  thead({ children }: any) {
+                    return (
+                      <thead className="bg-[#1e293b] text-slate-200 border-b border-slate-800 uppercase text-[10px] sm:text-[11px] font-mono tracking-wider">
+                        {children}
+                      </thead>
+                    );
+                  },
+                  th({ children }: any) {
+                    return (
+                      <th className="py-3 px-4 font-bold text-orange-400 border-r border-slate-800/40 last:border-r-0">
+                        {children}
+                      </th>
+                    );
+                  },
+                  td({ children }: any) {
+                    return (
+                      <td className="py-3 px-4 border-b border-slate-800/40 border-r border-slate-800/30 last:border-r-0 text-slate-300 align-top font-sans">
+                        {children}
+                      </td>
+                    );
+                  },
+                  tr({ children }: any) {
+                    return (
+                      <tr className="hover:bg-slate-800/30 transition-colors">
+                        {children}
+                      </tr>
+                    );
+                  },
+                  pre({ children }: any) {
+                    return <div className="not-prose my-6">{children}</div>;
+                  },
+                  code({ node, className, children, ...props }: any) {
                     const match = /language-(\w+)/.exec(className || '');
-                    return !inline && match ? (
-                      <div className="not-prose overflow-x-auto">
-                        <SyntaxHighlighter
-                          style={vscDarkPlus as any}
-                          language={match[1]}
-                          PreTag="div"
-                          customStyle={{
-                            margin: '1.5rem 0',
-                            padding: '1.25rem',
-                            borderRadius: '0.75rem',
-                            backgroundColor: 'transparent',
-                            background: 'transparent',
-                            border: '1px solid #1e293b',
-                            fontSize: '0.85rem',
-                          }}
-                          codeTagProps={{
-                            style: {
+                    const contentString = String(children).replace(/\n$/, '');
+                    const isMultiLine = contentString.includes('\n');
+
+                    // 1. Syntax Highlighted Code Blocks
+                    if (match) {
+                      return (
+                        <div className="not-prose overflow-x-auto rounded-xl border border-slate-800 bg-[#0b1120] my-4 shadow-lg">
+                          <SyntaxHighlighter
+                            style={vscDarkPlus as any}
+                            language={match[1]}
+                            PreTag="div"
+                            customStyle={{
+                              margin: 0,
+                              padding: '1.25rem',
                               backgroundColor: 'transparent',
                               background: 'transparent',
-                            },
-                          }}
-                          {...props}
-                        >
-                          {String(children).replace(/\n$/, '')}
-                        </SyntaxHighlighter>
-                      </div>
-                    ) : (
-                      <code className={`${className || ''} not-prose`} {...props}>
-                        {children}
+                              fontSize: '0.85rem',
+                              lineHeight: '1.6',
+                            }}
+                            codeTagProps={{
+                              style: {
+                                backgroundColor: 'transparent',
+                                background: 'transparent',
+                              },
+                            }}
+                            {...props}
+                          >
+                            {contentString}
+                          </SyntaxHighlighter>
+                        </div>
+                      );
+                    }
+
+                    // 2. Multi-line Raw Code Block (without specified language)
+                    if (isMultiLine) {
+                      return (
+                        <pre className="not-prose overflow-x-auto rounded-xl border border-slate-800 bg-[#0b1120] p-4 sm:p-5 font-mono text-xs sm:text-[13px] text-slate-300 whitespace-pre leading-relaxed my-4 shadow-lg">
+                          {contentString}
+                        </pre>
+                      );
+                    }
+
+                    // 3. Clean Inline Code Badge (inside table cells, lists, or paragraphs)
+                    return (
+                      <code className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700/80 text-orange-400 font-mono text-xs not-prose inline-block my-0.5" {...props}>
+                        {contentString}
                       </code>
                     );
                   },

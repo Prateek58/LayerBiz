@@ -21,19 +21,12 @@ By applying the **Pareto Principle (the 80/20 rule)**, 20% of structural technic
 
 ## The 4 High-Impact Pillars of Headless SEO
 
-When pairing a modern frontend like **Next.js 14 (App Router)** with a headless CMS like **Strapi v5**, here are the four technical foundations that deliver maximum ranking power:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 Next.js 14 + Strapi v5 SEO                  │
-├──────────────────────────────┬──────────────────────────────┤
-│ 1. Dynamic Metadata          │ 2. Schema.org JSON-LD        │
-│    (OpenGraph & Twitter)     │    (Rich Article Snippets)   │
-├──────────────────────────────┼──────────────────────────────┤
-│ 3. Automated XML Sitemap     │ 4. Smart Fallback Cascade    │
-│    (Dynamic sitemap.xml)     │    (Zero Editorial Burden)   │
-└──────────────────────────────┴──────────────────────────────┘
-```
+| High-Impact SEO Pillar | Implementation Technique | Primary Benefit |
+| :--- | :--- | :--- |
+| **1. Dynamic Metadata Engine** | Next.js `generateMetadata()` + OpenGraph | High CTR previews on X, LinkedIn & SERP |
+| **2. Schema.org Structured Data** | JSON-LD `BlogPosting` Rich Snippets | Verified Google Knowledge Graph authority |
+| **3. Automated XML Sitemap** | Next.js `sitemap.ts` via Strapi Document API | Immediate crawler discovery and indexation |
+| **4. Smart Fallback Cascade** | `post.metaTitle \|\| post.title` | Zero editorial overhead for content creators |
 
 ---
 

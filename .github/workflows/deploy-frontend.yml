@@ -1,0 +1,46 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**' # ONLY triggers if frontend files change
+
+jobs:
+  deploy-frontend:
+    name: Deploy Next.js Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Frontend via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: layerbiz
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # 1. Load NVM environment explicitly for headless SSH
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH=$PATH:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin
+
+            # 2. Sync Repository cleanly
+            cd /home/layerbiz/htdocs/layerbiz.com
+            git fetch --all
+            git reset --hard origin/main
+            
+            # 3. Build Next.js
+            cd frontend
+            npm install
+            npm run build
+            
+            # 4. Map static assets into standalone structure
+            mkdir -p .next/standalone/.next
+            cp -r .next/static .next/standalone/.next/
+            cp -r public .next/standalone/ || true
+            
+            # 5. Flush old process RAM cache and start standalone server on port 3000
+            pm2 delete layerbiz-frontend || true
+            PORT=3000 pm2 start .next/standalone/server.js --name "layerbiz-frontend"
+            pm2 save

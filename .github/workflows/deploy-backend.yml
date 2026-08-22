@@ -1,0 +1,41 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**' # ONLY triggers if backend files change
+
+jobs:
+  deploy-backend:
+    name: Deploy Strapi Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Backend via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: layerbiz-admin
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            # 1. Load NVM environment explicitly for headless SSH
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH=$PATH:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node 2>/dev/null | tail -n 1)/bin
+
+            # 2. Sync Repository cleanly
+            cd /home/layerbiz-admin/htdocs/admin.layerbiz.com
+            git fetch --all
+            git reset --hard origin/main
+            
+            # 3. Build Strapi
+            cd backend
+            npm install
+            npm run build
+            
+            # 4. Flush PM2 process memory and restart
+            pm2 delete layerbiz-backend || true
+            pm2 start npm --name "layerbiz-backend" -- start
+            pm2 save

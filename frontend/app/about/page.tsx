@@ -1,5 +1,15 @@
 import React from 'react';
 import { fetchAboutPage } from '@/lib/api';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Manifesto & Venture Engineering Philosophy',
+  description:
+    'Discover the philosophy, engineering standards, and vision behind LayerBiz venture studio and our micro-SaaS ecosystem.',
+  alternates: {
+    canonical: 'https://layerbiz.com/about',
+  },
+};
 
 export default async function AboutPage() {
   const aboutData = await fetchAboutPage();

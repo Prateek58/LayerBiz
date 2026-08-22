@@ -586,6 +586,7 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    canonicalUrl: Schema.Attribute.String;
     category: Schema.Attribute.String;
     content: Schema.Attribute.RichText;
     createdAt: Schema.Attribute.DateTime;
@@ -593,12 +594,15 @@ export interface ApiBlogPostBlogPost extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     date: Schema.Attribute.String;
     excerpt: Schema.Attribute.Text;
+    keywords: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::blog-post.blog-post'
     > &
       Schema.Attribute.Private;
+    metaDescription: Schema.Attribute.Text;
+    metaTitle: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     readTime: Schema.Attribute.String;
     slug: Schema.Attribute.UID<'title'>;

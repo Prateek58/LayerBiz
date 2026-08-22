@@ -85,7 +85,10 @@ export async function generateMetadata({
 
 export default async function BlogPostPage({ params }: { params: { id: string } }) {
   const { id } = params;
-  const post = await fetchBlogPost(id);
+  const [post, allPosts] = await Promise.all([
+    fetchBlogPost(id),
+    fetchBlogPosts(),
+  ]);
 
   if (!post) {
     notFound();
@@ -100,6 +103,16 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
       : Array.isArray(post.tags)
       ? post.tags
       : [];
+
+  // Find up to 2 related articles in the same category (or fallback to recent)
+  const relatedPosts = allPosts
+    .filter((p: any) => (p.slug || p.id) !== (post.slug || post.id))
+    .sort((a: any, b: any) => {
+      if (a.category === post.category && b.category !== post.category) return -1;
+      if (b.category === post.category && a.category !== post.category) return 1;
+      return 0;
+    })
+    .slice(0, 2);
 
   // Schema.org BlogPosting Structured Data for Google Rich Results
   const articleSchema = {
@@ -140,18 +153,26 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
       />
 
       <div className="max-w-3xl mx-auto">
-        <Link
-          href="/blog"
-          className="text-slate-500 hover:text-white mb-6 sm:mb-8 inline-flex items-center text-xs sm:text-sm"
-        >
-          <i className="fas fa-arrow-left mr-2"></i> Back to Logs
-        </Link>
+        {/* Navigation Breadcrumb */}
+        <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8 text-xs font-mono">
+          <Link
+            href="/blog"
+            className="text-slate-500 hover:text-white inline-flex items-center transition-colors"
+          >
+            <i className="fas fa-arrow-left mr-2"></i> Back to Logs
+          </Link>
+          {post.category && (
+            <Link
+              href="/blog"
+              className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 rounded-md border border-orange-500/20 transition-colors"
+            >
+              {post.category}
+            </Link>
+          )}
+        </div>
 
         <article>
           <header className="mb-8 sm:mb-10">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 sm:mb-6 leading-tight">
-              {post.title}
-            </h1>
             <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-slate-500 text-[11px] sm:text-xs border-b border-slate-800 pb-4 sm:pb-6 font-mono">
               <span>BY: LayerBiz Engineering</span>
               <span>|</span>
@@ -288,6 +309,34 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
             )}
           </div>
         </article>
+
+        {/* Related Posts Footer Rail */}
+        {relatedPosts.length > 0 && (
+          <div className="mt-16 pt-8 border-t border-slate-800/80">
+            <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-500 mb-6">
+              // Related Engineering Logs
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {relatedPosts.map((related: any) => (
+                <Link
+                  key={related.id}
+                  href={`/blog/${related.slug || related.id}`}
+                  className="group bg-[#1e293b]/30 border border-slate-800 hover:border-orange-500/40 rounded-xl p-5 transition-all hover:bg-[#1e293b]/50 block"
+                >
+                  <div className="text-[9px] font-mono text-orange-400 uppercase tracking-widest mb-1.5 font-bold">
+                    {related.category || 'Engineering'}
+                  </div>
+                  <h4 className="text-sm font-bold text-white group-hover:text-orange-400 transition-colors line-clamp-2 mb-2">
+                    {related.title}
+                  </h4>
+                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                    {related.excerpt}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

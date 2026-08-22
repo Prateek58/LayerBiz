@@ -15,13 +15,17 @@ const Hero: React.FC = () => {
         {/* Animated Kinetic Logo Blocks Area */}
         <LogoBlockAnimator />
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-6">
+        <Link
+          href="/blog"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-6 transition-all group cursor-pointer w-fit"
+        >
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
           </span>
-          Next Gen Micro-SaaS
-        </div>
+          <span>Explore 9 Engineering Logs</span>
+          <i className="fas fa-arrow-right text-[9px] group-hover:translate-x-1 transition-transform"></i>
+        </Link>
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white leading-tight tracking-tighter mb-6 sm:mb-8">
           Code the Future <br />
@@ -35,18 +39,25 @@ const Hero: React.FC = () => {
           We bridge the gap between complex engineering and elegant user experiences.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 flex-wrap">
           <Link
             href="/microsaas"
-            className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-orange-900/20 transition-all flex items-center justify-center gap-2 active:scale-95 text-center"
+            className="bg-orange-600 hover:bg-orange-500 text-white px-7 py-3.5 rounded-xl font-bold shadow-lg shadow-orange-900/20 transition-all flex items-center justify-center gap-2 active:scale-95 text-center text-sm sm:text-base"
           >
             Explore Ecosystem <i className="fas fa-arrow-right text-xs"></i>
           </Link>
           <Link
-            href="/about"
-            className="border border-slate-700 hover:border-slate-500 text-slate-300 px-8 py-4 rounded-xl font-bold transition-all active:scale-95 text-center"
+            href="/blog"
+            className="border border-slate-700 hover:border-orange-500/50 hover:bg-slate-800/40 text-slate-200 px-7 py-3.5 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 text-center text-sm sm:text-base group"
           >
-            Our Manifesto
+            <i className="fas fa-book-open text-xs text-orange-500 group-hover:scale-110 transition-transform"></i>
+            Engineering Logs
+          </Link>
+          <Link
+            href="/about"
+            className="border border-slate-800 hover:border-slate-600 text-slate-400 hover:text-slate-300 px-6 py-3.5 rounded-xl font-bold transition-all active:scale-95 text-center text-sm sm:text-base"
+          >
+            Manifesto
           </Link>
         </div>
       </div>

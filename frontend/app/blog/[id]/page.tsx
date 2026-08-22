@@ -1,16 +1,21 @@
-import { posts } from '@/lib/blog';
+import { fetchBlogPost, fetchBlogPosts } from '@/lib/api';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
 
-export function generateStaticParams() {
-  return posts.map((post) => ({
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+
+export async function generateStaticParams() {
+  const posts = await fetchBlogPosts();
+  return posts.map((post: any) => ({
     id: post.id.toString(),
   }));
 }
 
-export default function BlogPostPage({ params }: { params: { id: string } }) {
+export default async function BlogPostPage({ params }: { params: { id: string } }) {
   const { id } = params;
-  const post = posts.find(p => p.id.toString() === id);
+  const post = await fetchBlogPost(id);
   
   if (!post) {
     notFound();
@@ -35,24 +40,62 @@ export default function BlogPostPage({ params }: { params: { id: string } }) {
                      </div>
                 </header>
                 
-                <div className="prose prose-invert max-w-none space-y-6 text-slate-400 leading-loose">
-                  <p className="text-lg text-slate-300 italic">
-                    This is a simulated read view. In a production environment, this would render full Markdown or CMS content.
-                  </p>
-                  <p>
-                    Building robust edge systems requires a fundamental shift in how we perceive data consistency and availability. At LayerBiz, we leverage a combination of global edge workers and localized caching strategies to ensure our users experience zero perceived lag.
-                  </p>
-                  <div className="bg-slate-900 rounded-xl p-6 font-mono text-sm border border-slate-800 my-8">
-                    <p className="text-blue-400">// Sample configuration for edge orchestration</p>
-                    <p><span className="text-purple-400">export const</span> <span className="text-emerald-400">config</span> = {'{'}</p>
-                    <p className="pl-4">runtime: <span className="text-orange-400">'edge'</span>,</p>
-                    <p className="pl-4">regions: [<span className="text-orange-400">'fra1'</span>, <span className="text-orange-400">'sfo1'</span>, <span className="text-orange-400">'sin1'</span>],</p>
-                    <p className="pl-4">cacheStrategy: <span className="text-orange-400">'stale-while-revalidate'</span></p>
-                    <p>{'}'};</p>
-                  </div>
-                  <p>
-                    The transition to React 19 has enabled us to optimize our server component patterns, reducing initial bundle sizes by nearly 40%. This is critical for our micro-SaaS ecosystem where every millisecond counts toward conversion and user satisfaction.
-                  </p>
+                <div className="prose prose-invert prose-pre:bg-transparent prose-pre:p-0 max-w-none space-y-6 text-slate-400 leading-loose">
+                  {post.content ? (
+                    <ReactMarkdown
+                      components={{
+                        em({ children, ...props }: any) {
+                          return (
+                            <span className="text-lg text-slate-300 italic" style={{ fontStyle: 'italic' }} {...props}>
+                              {children}
+                            </span>
+                          );
+                        },
+                        pre({ children }: any) {
+                          return <div className="not-prose">{children}</div>;
+                        },
+                        code({ node, inline, className, children, ...props }: any) {
+                          const match = /language-(\w+)/.exec(className || '');
+                          return !inline && match ? (
+                            <div className="not-prose">
+                              <SyntaxHighlighter
+                                style={vscDarkPlus as any}
+                                language={match[1]}
+                                PreTag="div"
+                                customStyle={{
+                                  margin: '2rem 0',
+                                  padding: '1.5rem',
+                                  borderRadius: '0.75rem',
+                                  backgroundColor: 'transparent',
+                                  background: 'transparent',
+                                  border: '1px solid #1e293b',
+                                }}
+                                codeTagProps={{
+                                  style: {
+                                    backgroundColor: 'transparent',
+                                    background: 'transparent',
+                                  },
+                                }}
+                                {...props}
+                              >
+                                {String(children).replace(/\n$/, '')}
+                              </SyntaxHighlighter>
+                            </div>
+                          ) : (
+                            <code className={`${className || ''} not-prose`} {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
+                      }}
+                    >
+                      {post.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <p className="text-lg text-slate-300 italic">
+                      No content available for this post.
+                    </p>
+                  )}
                 </div>
              </article>
         </div>

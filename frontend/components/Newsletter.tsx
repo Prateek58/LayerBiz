@@ -1,17 +1,54 @@
+'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Newsletter: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [loadedAt, setLoadedAt] = useState<number>(0);
   const [subscribed, setSubscribed] = useState(false);
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    setLoadedAt(Date.now());
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubscribed(true);
-    setTimeout(() => {
-      setSubscribed(false);
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          _hp: honeypot, // Invisible bot honeypot
+          _t: loadedAt,  // Time-trap validation
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to subscribe');
+      }
+
+      setMessage(data.message || "You're on the list for the next build update.");
+      setSubscribed(true);
       setEmail('');
-    }, 5000);
+      setHoneypot('');
+      setTimeout(() => {
+        setSubscribed(false);
+      }, 6000);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,10 +70,28 @@ const Newsletter: React.FC = () => {
         {subscribed ? (
           <div className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-2xl animate-in zoom-in duration-300">
             <h3 className="text-emerald-400 font-bold mb-2 font-mono">CONNECTED</h3>
-            <p className="text-emerald-400/80 text-sm italic">You're on the list for the next build update.</p>
+            <p className="text-emerald-400/80 text-sm italic">{message}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="relative">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-400 text-xs mb-4 font-mono">
+                {error}
+              </div>
+            )}
+
+            {/* Honeypot field - Invisible to humans, traps automated spam bots */}
+            <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, zIndex: -1 }}>
+              <input
+                type="text"
+                name="newsletter_hp"
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            </div>
+
             <div className="flex flex-col md:flex-row gap-3">
               <input
                 type="email"
@@ -48,9 +103,17 @@ const Newsletter: React.FC = () => {
               />
               <button
                 type="submit"
-                className="bg-orange-600 hover:bg-orange-500 text-white px-8 py-4 rounded-xl font-bold transition-all active:scale-[0.98] whitespace-nowrap"
+                disabled={loading}
+                className="bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-4 rounded-xl font-bold transition-all active:scale-[0.98] whitespace-nowrap flex items-center justify-center gap-2"
               >
-                Join Protocol
+                {loading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin text-xs"></i>
+                    Connecting...
+                  </>
+                ) : (
+                  'Join Protocol'
+                )}
               </button>
             </div>
             <p className="mt-6 text-[10px] text-slate-600 uppercase tracking-widest font-bold">
@@ -59,7 +122,7 @@ const Newsletter: React.FC = () => {
           </form>
         )}
       </div>
-      
+
       {/* Background Decor */}
       <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none font-mono text-8xl text-white font-black">
         BIZ

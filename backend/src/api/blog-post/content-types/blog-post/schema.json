@@ -16,20 +16,27 @@
       "type": "string",
       "required": true
     },
+    "slug": {
+      "type": "uid",
+      "targetField": "title"
+    },
+    "category": {
+      "type": "string"
+    },
     "date": {
       "type": "string"
     },
     "readTime": {
       "type": "string"
     },
+    "tags": {
+      "type": "json"
+    },
     "excerpt": {
       "type": "text"
     },
-    "category": {
-      "type": "string"
-    },
-    "tags": {
-      "type": "json"
+    "content": {
+      "type": "richtext"
     }
   }
 }

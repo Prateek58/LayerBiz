@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ContactData } from '../types';
 
 const ContactForm: React.FC = () => {
@@ -9,9 +9,15 @@ const ContactForm: React.FC = () => {
     subject: '',
     message: ''
   });
+  const [honeypot, setHoneypot] = useState('');
+  const [loadedAt, setLoadedAt] = useState<number>(0);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setLoadedAt(Date.now());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,13 +28,18 @@ const ContactForm: React.FC = () => {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          _hp: honeypot, // Invisible Honeypot field
+          _t: loadedAt,  // Time-trap check
+        }),
       });
 
       if (!res.ok) throw new Error('Failed to send message');
 
       setSubmitted(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
+      setHoneypot('');
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err) {
       setError('Something went wrong. Please try again.');
@@ -62,6 +73,19 @@ const ContactForm: React.FC = () => {
                 {error}
               </div>
             )}
+
+            {/* Honeypot field - Invisible to humans, traps automated spam bots */}
+            <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, zIndex: -1 }}>
+              <input
+                type="text"
+                name="company_url_hp"
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Identity</label>

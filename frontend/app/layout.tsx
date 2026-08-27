@@ -1,9 +1,11 @@
 import React from 'react';
+import Script from 'next/script';
 import AppLayout from '../components/AppLayout';
 import './globals.css';
 import { Metadata, Viewport } from 'next';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://layerbiz.com';
+const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-XRBZD4CLET';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -112,6 +114,29 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         />
+        {/* Google Analytics 4 (gtag.js) */}
+        {gaId && (
+          <>
+            <Script
+              strategy="afterInteractive"
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            />
+            <Script
+              id="google-analytics-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${gaId}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
         {/* Google Knowledge Graph JSON-LD Schema */}
         <script
           type="application/ld+json"

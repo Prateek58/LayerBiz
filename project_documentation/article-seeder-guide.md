@@ -13,40 +13,13 @@ This guide explains how your blog articles are stored, authored in Markdown, and
 
 ---
 
-## 2. The 10 Articles in `/blogs`
+## 2. Content Storage Architecture
 
-All articles are saved as clean Markdown documents with frontmatter in the [blogs/](file:///Users/prateekbhardwaj/Projects/LayerBiz/blogs/) folder:
+All blog articles are stored directly as standard Markdown files inside the `/blogs` folder. 
 
-1. **`01-80-20-enterprise-nextjs-strapi-seo.md`**:
-   * *Title*: The 80/20 Next.js & Strapi SEO Guide: Automating Schema, OpenGraph, and Sitemaps
-   * *Slug*: `80-20-rule-enterprise-nextjs-strapi-seo`
-2. **`02-how-to-prompt-ai-coding-agents.md`**:
-   * *Title*: From Chaos to Precision: How to Prompt AI Coding Agents for Production Apps
-   * *Slug*: `how-to-prompt-ai-coding-agents`
-3. **`03-why-strapi-v5-dropped-numeric-ids.md`**:
-   * *Title*: Why Strapi v5 Dropped Static Numeric IDs (And Why Slugs Save Your Life)
-   * *Slug*: `why-strapi-v5-dropped-numeric-ids`
-4. **`04-zero-cost-anti-bot-honeypot-protection.md`**:
-   * *Title*: How to Stop 100% of Form Bot Spam Without Annoying CAPTCHAs
-   * *Slug*: `zero-cost-anti-bot-honeypot-protection`
-5. **`05-decoupled-micro-saas-architecture.md`**:
-   * *Title*: Decoupled Architectures: Building a High-Performance Micro-SaaS Studio with Next.js 14 & Headless CMS
-   * *Slug*: `decoupled-micro-saas-architecture`
-6. **`06-why-we-bet-on-react-19-for-our-enterprise-suite.md`**:
-   * *Title*: Why We Bet on React 19 for Our Enterprise Suite
-   * *Slug*: `why-we-bet-on-react-19-for-our-enterprise-suite`
-7. **`07-securing-micro-saas-a-defense-in-depth-approach.md`**:
-   * *Title*: Securing Micro-SaaS: A Defense-in-Depth Approach
-   * *Slug*: `securing-micro-saas-a-defense-in-depth-approach`
-8. **`08-ai-beyond-chatbots-building-task-orchestrators.md`**:
-   * *Title*: AI Beyond Chatbots: Building Task Orchestrators
-   * *Slug*: `ai-beyond-chatbots-building-task-orchestrators`
-9. **`09-programmatic-content-sync-strapi-production.md`**:
-   * *Title*: How to Sync Markdown Files Directly into Strapi (Without Manual CMS Clicking)
-   * *Slug*: `programmatic-content-sync-strapi-production`
-10. **`10-sub-50ms-headless-caching-nextjs-strapi.md`**:
-    * *Title*: How to Fix Slow Next.js & Strapi Page Loads with ISR Caching (From 2s to Sub-50ms)
-    * *Slug*: `sub-50ms-headless-caching-nextjs-strapi`
+* The **`/blogs` directory is the single source of truth**.
+* You do **not** need to manually maintain a list of posts in documentation.
+* To view all published or drafted articles, simply inspect the files inside `/blogs/`.
 
 ---
 

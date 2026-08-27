@@ -13,39 +13,63 @@ This guide explains how your blog articles are stored, authored in Markdown, and
 
 ---
 
-## 2. The 5 Articles in `/blogs`
+## 2. The 10 Articles in `/blogs`
 
 All articles are saved as clean Markdown documents with frontmatter in the [blogs/](file:///Users/prateekbhardwaj/Projects/LayerBiz/blogs/) folder:
 
 1. **`01-80-20-enterprise-nextjs-strapi-seo.md`**:
-   * *Title*: The 80/20 Rule for Enterprise Next.js & Strapi SEO
+   * *Title*: The 80/20 Next.js & Strapi SEO Guide: Automating Schema, OpenGraph, and Sitemaps
    * *Slug*: `80-20-rule-enterprise-nextjs-strapi-seo`
-   * *Key insight*: Implementing Schema.org JSON-LD, OpenGraph, and XML sitemaps with zero editorial overhead.
 2. **`02-how-to-prompt-ai-coding-agents.md`**:
    * *Title*: From Chaos to Precision: How to Prompt AI Coding Agents for Production Apps
    * *Slug*: `how-to-prompt-ai-coding-agents`
-   * *Key insight*: The 3-step Intent-Constraint-Verification prompt framework to get production architectures without temporary hacks.
 3. **`03-why-strapi-v5-dropped-numeric-ids.md`**:
    * *Title*: Why Strapi v5 Dropped Static Numeric IDs (And Why Slugs Save Your Life)
    * *Slug*: `why-strapi-v5-dropped-numeric-ids`
-   * *Key insight*: Strapi 5's Document Service, Draft & Publish state machines, and resilient slug routing.
 4. **`04-zero-cost-anti-bot-honeypot-protection.md`**:
-   * *Title*: Zero-Cost, Zero-Friction Anti-Bot Protection for Modern Web Forms
+   * *Title*: How to Stop 100% of Form Bot Spam Without Annoying CAPTCHAs
    * *Slug*: `zero-cost-anti-bot-honeypot-protection`
-   * *Key insight*: Why Google reCAPTCHA hurts UX and how invisible honeypots + sub-second time traps stop 100% of bot spam for free.
 5. **`05-decoupled-micro-saas-architecture.md`**:
    * *Title*: Decoupled Architectures: Building a High-Performance Micro-SaaS Studio with Next.js 14 & Headless CMS
    * *Slug*: `decoupled-micro-saas-architecture`
-   * *Key insight*: Next.js 14 App Router + Strapi CRM + instant Nodemailer Gmail alert gateway.
+6. **`06-why-we-bet-on-react-19-for-our-enterprise-suite.md`**:
+   * *Title*: Why We Bet on React 19 for Our Enterprise Suite
+   * *Slug*: `why-we-bet-on-react-19-for-our-enterprise-suite`
+7. **`07-securing-micro-saas-a-defense-in-depth-approach.md`**:
+   * *Title*: Securing Micro-SaaS: A Defense-in-Depth Approach
+   * *Slug*: `securing-micro-saas-a-defense-in-depth-approach`
+8. **`08-ai-beyond-chatbots-building-task-orchestrators.md`**:
+   * *Title*: AI Beyond Chatbots: Building Task Orchestrators
+   * *Slug*: `ai-beyond-chatbots-building-task-orchestrators`
+9. **`09-programmatic-content-sync-strapi-production.md`**:
+   * *Title*: How to Sync Markdown Files Directly into Strapi (Without Manual CMS Clicking)
+   * *Slug*: `programmatic-content-sync-strapi-production`
+10. **`10-sub-50ms-headless-caching-nextjs-strapi.md`**:
+    * *Title*: How to Fix Slow Next.js & Strapi Page Loads with ISR Caching (From 2s to Sub-50ms)
+    * *Slug*: `sub-50ms-headless-caching-nextjs-strapi`
 
 ---
 
-## 3. How to Run the Seeder
+## 3. How to Run the Smart Seeder
+
+The seeder uses **Smart Differential Sync**:
+* **Untouched articles**: Skipped automatically without database writes, preserving SEO timestamps and avoiding webhook storms.
+* **Modified articles**: Only updates the exact articles whose content or metadata changed.
+* **New articles**: Creates and publishes newly added markdown files.
 
 ### A. Seeding Local Development:
-Make sure your local Strapi is running on port `1337`, then run:
 ```bash
+# Smart sync all articles (only updates changed/new):
 node backend/scripts/seed-articles.js
+
+# Sync a specific article only:
+node backend/scripts/seed-articles.js blogs/04-zero-cost-anti-bot-honeypot-protection.md
+
+# Safe Prune Mode (deletes orphaned Strapi posts if their .md file was deleted):
+node backend/scripts/seed-articles.js --prune
+
+# Force update all articles even if unchanged:
+node backend/scripts/seed-articles.js --force
 ```
 
 ### B. Seeding Remote Production via SSH:
@@ -61,9 +85,11 @@ node backend/scripts/seed-articles.js
    ```bash
    git pull origin main
    ```
-4. Run the seeder (it automatically reads your `.env.production` file):
+4. Run the smart seeder:
    ```bash
    node backend/scripts/seed-articles.js
+   # Or with prune if you deleted articles:
+   # node backend/scripts/seed-articles.js --prune
    ```
 
 *(Alternatively, you can pass the environment variables inline:)*
@@ -73,9 +99,9 @@ STRAPI_API_URL="http://127.0.0.1:1337" STRAPI_API_TOKEN="your_production_token" 
 
 ---
 
-## 4. Writing New Articles in the Future
+## 4. Writing & Deleting Articles
 
-To add a new article in the future:
+### Adding a New Article:
 1. Create a new `.md` file in `blogs/your-article-name.md`.
 2. Add the frontmatter header:
    ```yaml
@@ -90,4 +116,8 @@ To add a new article in the future:
    ---
    ```
 3. Write your content in Markdown below the header.
-4. Run `node backend/scripts/seed-articles.js` — the script will automatically detect the new file, create it in Strapi, and publish it!
+4. Run `node backend/scripts/seed-articles.js` — the script will detect the new file, create it in Strapi, and publish it.
+
+### Deleting an Article:
+1. Delete the corresponding `.md` file from `/blogs`.
+2. Run `node backend/scripts/seed-articles.js --prune` — the script will detect that the slug is gone from Git and safely delete it from Strapi.

@@ -1,15 +1,22 @@
 #!/usr/bin/env node
 
 /**
- * LayerBiz Automated Article Seeder
+ * LayerBiz Smart Article Seeder & Sync Engine
  * 
- * Safely seeds all markdown articles from /blogs into Strapi CMS (Local or Remote Production).
- * Reads environment variables from shell or automatically discovers all common .env files.
+ * Safely syncs markdown articles from /blogs into Strapi CMS (Local or Remote Production).
+ * 
+ * Features:
+ * - Smart Differential Sync: Only writes to DB if content or metadata has actually changed.
+ * - Leaves untouched articles intact (preserving Strapi timestamps, SEO last-modified dates, and cache).
+ * - Safe Prune Mode (--prune): Deletes orphaned posts from Strapi if their markdown file was removed.
+ * - Single-file targeting: Seed all or only specific articles.
+ * - Zero external dependencies.
  * 
  * Usage:
- *   Local: node backend/scripts/seed-articles.js
- *   Prod:  node backend/scripts/seed-articles.js
- *   Or:    STRAPI_API_TOKEN="token" node backend/scripts/seed-articles.js
+ *   Sync all (smart diff):  node backend/scripts/seed-articles.js
+ *   Sync specific file:     node backend/scripts/seed-articles.js blogs/08-my-post.md
+ *   Prune deleted posts:    node backend/scripts/seed-articles.js --prune
+ *   Force update all:       node backend/scripts/seed-articles.js --force
  */
 
 const fs = require('fs');
@@ -68,11 +75,17 @@ if (!fs.existsSync(blogsDir)) {
 const STRAPI_URL = process.env.STRAPI_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337';
 const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN || '';
 
-console.log(`\n🚀 [LayerBiz Seeder] Connecting to Strapi at: ${STRAPI_URL}`);
+// Parse CLI flags
+const cliArgs = process.argv.slice(2);
+const isForce = cliArgs.includes('--force');
+const isPrune = cliArgs.includes('--prune');
+const targetArg = cliArgs.find(arg => !arg.startsWith('--'));
+
+console.log(`\n[LayerBiz Seeder] Connecting to Strapi at: ${STRAPI_URL}`);
 if (STRAPI_TOKEN) {
-  console.log(`🔑 [LayerBiz Seeder] Authenticated with Strapi API Token (${STRAPI_TOKEN.substring(0, 10)}...)`);
+  console.log(`[LayerBiz Seeder] Authenticated with Strapi API Token (${STRAPI_TOKEN.substring(0, 10)}...)`);
 } else {
-  console.log(`⚠️  [LayerBiz Seeder] No STRAPI_API_TOKEN found in environment.`);
+  console.log(`[LayerBiz Seeder] No STRAPI_API_TOKEN found in environment.`);
 }
 
 /**
@@ -163,26 +176,85 @@ function makeRequest(url, method, headers, data) {
   });
 }
 
+/**
+ * Deep Equality Check for Content and Metadata
+ */
+function normalizeText(str) {
+  return (str || '').replace(/\r\n/g, '\n').trim();
+}
+
+function areArraysEqual(arr1, arr2) {
+  const a = Array.isArray(arr1) ? arr1 : [];
+  const b = Array.isArray(arr2) ? arr2 : [];
+  if (a.length !== b.length) return false;
+  const sortedA = [...a].sort();
+  const sortedB = [...b].sort();
+  return sortedA.every((val, idx) => val === sortedB[idx]);
+}
+
+function hasArticleChanged(existing, incoming) {
+  if (normalizeText(existing.title) !== normalizeText(incoming.title)) return true;
+  if (normalizeText(existing.content) !== normalizeText(incoming.content)) return true;
+  if (normalizeText(existing.excerpt) !== normalizeText(incoming.excerpt)) return true;
+  if (normalizeText(existing.category) !== normalizeText(incoming.category)) return true;
+  if (normalizeText(existing.readTime) !== normalizeText(incoming.readTime)) return true;
+  if (normalizeText(existing.metaTitle) !== normalizeText(incoming.metaTitle)) return true;
+  if (normalizeText(existing.metaDescription) !== normalizeText(incoming.metaDescription)) return true;
+  if (normalizeText(existing.canonicalUrl) !== normalizeText(incoming.canonicalUrl)) return true;
+  if (!areArraysEqual(existing.tags, incoming.tags)) return true;
+  if (!areArraysEqual(existing.keywords, incoming.keywords)) return true;
+
+  return false;
+}
+
 async function seed() {
   if (!fs.existsSync(blogsDir)) {
-    console.error(`❌ Blogs directory not found at: ${blogsDir}`);
+    console.error(`Blogs directory not found at: ${blogsDir}`);
     process.exit(1);
   }
 
-  const files = fs.readdirSync(blogsDir).filter(f => f.endsWith('.md')).sort();
-  console.log(`📚 Found ${files.length} article files in ${blogsDir}.\n`);
+  if (isPrune && targetArg) {
+    console.error(`Safety Error: --prune cannot be used with a single target file (${targetArg}) to prevent accidental deletions.`);
+    process.exit(1);
+  }
+
+  let allLocalFiles = fs.readdirSync(blogsDir).filter(f => f.endsWith('.md')).sort();
+  let filesToProcess = allLocalFiles;
+
+  // If a single file/target was passed as argument, filter to it
+  if (targetArg) {
+    const targetBase = path.basename(targetArg);
+    filesToProcess = filesToProcess.filter(f => f === targetBase || f.includes(targetArg));
+    if (filesToProcess.length === 0) {
+      console.error(`Specified file "${targetArg}" not found in ${blogsDir}`);
+      process.exit(1);
+    }
+  }
+
+  console.log(`Scanning ${filesToProcess.length} article(s) in ${blogsDir}${isForce ? ' (Force Mode)' : ''}${isPrune ? ' (Prune Mode Enabled)' : ''}...\n`);
 
   const headers = {};
   if (STRAPI_TOKEN) {
     headers['Authorization'] = `Bearer ${STRAPI_TOKEN}`;
   }
 
-  for (const file of files) {
+  const stats = {
+    created: 0,
+    updated: 0,
+    unchanged: 0,
+    pruned: 0,
+    errors: 0,
+  };
+
+  const localSlugs = new Set();
+
+  for (const file of filesToProcess) {
     const fullPath = path.join(blogsDir, file);
     const { metadata, content } = parseMarkdownFile(fullPath);
 
     const slug = metadata.slug || file.replace(/\.md$/, '');
     const title = metadata.title || slug;
+    localSlugs.add(slug);
 
     const payloadData = {
       title: title,
@@ -201,28 +273,81 @@ async function seed() {
     };
 
     try {
-      // 1. Check if article already exists by slug
-      const checkUrl = `${STRAPI_URL}/api/blog-posts?filters[slug][$eq]=${slug}`;
+      // 1. Check if article already exists in Strapi by slug
+      const checkUrl = `${STRAPI_URL}/api/blog-posts?filters[slug][$eq]=${encodeURIComponent(slug)}`;
       const searchRes = await makeRequest(checkUrl, 'GET', headers);
 
       if (searchRes.data && searchRes.data.length > 0) {
-        // Update existing article
-        const existingId = searchRes.data[0].documentId || searchRes.data[0].id;
-        const updateUrl = `${STRAPI_URL}/api/blog-posts/${existingId}`;
-        await makeRequest(updateUrl, 'PUT', headers, { data: payloadData });
-        console.log(`[Updated]  "${title}" (${slug})`);
+        const existingRecord = searchRes.data[0];
+        const existingId = existingRecord.documentId || existingRecord.id;
+
+        if (!isForce && !hasArticleChanged(existingRecord, payloadData)) {
+          // Content is identical - skip write
+          stats.unchanged++;
+          console.log(`[Unchanged] "${title}" (${slug})`);
+        } else {
+          // Content or metadata changed - update
+          const updateUrl = `${STRAPI_URL}/api/blog-posts/${existingId}`;
+          await makeRequest(updateUrl, 'PUT', headers, { data: payloadData });
+          stats.updated++;
+          console.log(`[Updated]   "${title}" (${slug})`);
+        }
       } else {
-        // Create new article
+        // Article does not exist - create
         const createUrl = `${STRAPI_URL}/api/blog-posts`;
         await makeRequest(createUrl, 'POST', headers, { data: payloadData });
-        console.log(`[Created]  "${title}" (${slug})`);
+        stats.created++;
+        console.log(`[Created]   "${title}" (${slug})`);
       }
     } catch (error) {
-      console.error(`[Error] Failed to seed "${title}":`, error.message);
+      stats.errors++;
+      console.error(`[Error]     Failed to sync "${title}":`, error.message);
     }
   }
 
-  console.log(`\nAll articles successfully synced to Strapi!\n`);
+  // Handle Pruning if requested (Only during full scan)
+  if (isPrune && !targetArg) {
+    try {
+      // Also collect all slugs from any files that might exist
+      allLocalFiles.forEach(f => {
+        const { metadata } = parseMarkdownFile(path.join(blogsDir, f));
+        localSlugs.add(metadata.slug || f.replace(/\.md$/, ''));
+      });
+
+      const listUrl = `${STRAPI_URL}/api/blog-posts?pagination[pageSize]=1000`;
+      const allStrapiRes = await makeRequest(listUrl, 'GET', headers);
+
+      if (allStrapiRes.data && Array.isArray(allStrapiRes.data)) {
+        for (const remotePost of allStrapiRes.data) {
+          const remoteSlug = remotePost.slug;
+          const remoteId = remotePost.documentId || remotePost.id;
+
+          if (remoteSlug && !localSlugs.has(remoteSlug)) {
+            const deleteUrl = `${STRAPI_URL}/api/blog-posts/${remoteId}`;
+            await makeRequest(deleteUrl, 'DELETE', headers);
+            stats.pruned++;
+            console.log(`[Pruned]    "${remotePost.title || remoteSlug}" (${remoteSlug}) - removed from Strapi`);
+          }
+        }
+      }
+    } catch (error) {
+      stats.errors++;
+      console.error(`[Error]     Failed during prune phase:`, error.message);
+    }
+  }
+
+  console.log(`\n========================================`);
+  console.log(`Sync Summary:`);
+  console.log(`  Created:   ${stats.created}`);
+  console.log(`  Updated:   ${stats.updated}`);
+  console.log(`  Unchanged: ${stats.unchanged}`);
+  if (isPrune) {
+    console.log(`  Pruned:    ${stats.pruned}`);
+  }
+  if (stats.errors > 0) {
+    console.log(`  Errors:    ${stats.errors}`);
+  }
+  console.log(`========================================\n`);
 }
 
 seed();

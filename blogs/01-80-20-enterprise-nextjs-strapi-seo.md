@@ -1,17 +1,17 @@
 ---
-title: "The 80/20 Rule for Enterprise Next.js & Strapi SEO"
+title: "The 80/20 Next.js & Strapi SEO Guide: Automating Schema, OpenGraph, and Sitemaps"
 slug: "80-20-rule-enterprise-nextjs-strapi-seo"
 category: "Architecture"
 date: "Aug 22, 2026"
 readTime: "7 min read"
 tags: ["Next.js", "Strapi", "SEO", "Architecture"]
 excerpt: "How senior software architects apply the Pareto principle to automate OpenGraph, JSON-LD Schema rich snippets, and dynamic XML sitemaps with zero editorial overhead."
-metaTitle: "The 80/20 Rule for Enterprise Next.js & Strapi SEO | LayerBiz"
+metaTitle: "The 80/20 Next.js & Strapi SEO Guide | LayerBiz"
 metaDescription: "Master the 80/20 Pareto SEO principle in headless Next.js & Strapi v5. Learn how to automate JSON-LD schemas, OpenGraph, and XML sitemaps effortlessly."
-keywords: ["Next.js SEO", "Strapi Headless CMS", "JSON-LD Schema", "OpenGraph", "XML Sitemap", "Pareto SEO"]
+keywords: ["Next.js Strapi SEO Guide", "Automate Next.js SEO", "JSON-LD Schema Next.js", "OpenGraph Headless CMS", "XML Sitemap Strapi"]
 ---
 
-# The 80/20 Rule for Enterprise Next.js & Strapi SEO
+# The 80/20 Next.js & Strapi SEO Guide: Automating Schema, OpenGraph, and Sitemaps
 
 In enterprise web development, software teams frequently fall into the trap of over-engineering SEO plugins or burdening content writers with filling out 15 redundant metadata fields for every single blog post. 
 

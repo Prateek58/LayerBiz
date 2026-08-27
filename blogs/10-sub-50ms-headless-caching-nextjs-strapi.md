@@ -141,11 +141,13 @@ export async function fetchBlogPost(slugOrId: string) {
 
 ---
 
-## 5. Implementation Step 2: Instant On-Demand Webhook Invalidation
+## 5. Implementation Step 2: Instant On-Demand Cache Invalidation
 
-Waiting for an hourly timer (`revalidate: 3600`) is unacceptable for editorial workflows. When an editor publishes an article in Strapi, the live website must reflect changes immediately.
+Waiting for an hourly timer (`revalidate: 3600`) is unacceptable for real-time publishing. When an editor publishes an article in Strapi, the live website must reflect changes immediately.
 
-We create a secure on-demand cache revalidation endpoint in Next.js (`frontend/app/api/revalidate/route.ts`):
+Furthermore, because Next.js ISR caches rendered pages directly on the Node server, a client-side hard refresh (`Cmd + Shift + R`) will **not** bypass the server-side cache. Next.js must be programmatically notified to purge its central cache.
+
+We create a dual-method (POST for webhooks, GET for instant browser testing) revalidation route (`frontend/app/api/revalidate/route.ts`):
 
 ```typescript
 // frontend/app/api/revalidate/route.ts
@@ -182,38 +184,61 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+export async function GET(req: NextRequest) {
+  // Enables instant manual cache purge from your browser
+  const { searchParams } = new URL(req.url);
+  const secret = searchParams.get('secret');
+  const envSecret = process.env.REVALIDATION_TOKEN;
+  
+  if (envSecret && secret !== envSecret) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  }
+
+  revalidateTag('blog-posts');
+  revalidatePath('/blog');
+  revalidatePath('/');
+
+  return NextResponse.json({ revalidated: true, now: Date.now() });
+}
 ```
 
 ---
 
-## 6. Implementation Step 3: Strapi Webhook Automation
+## 6. Implementation Step 3: Strapi Webhook Automation & Global Cache Propagation
 
-Connect Strapi to the Next.js revalidation route:
+Connect Strapi to the Next.js revalidation route to eliminate manual intervention:
 
 1. In the **Strapi Admin Panel**, navigate to **Settings** > **Webhooks** > **Create new Webhook**.
-2. Set the **URL** to: `https://your-domain.com/api/revalidate?secret=your_secret_token`.
+2. Set the **URL** to: `https://yourdomain.com/api/revalidate`.
 3. Select events under **Entry**: `create`, `update`, `delete`, `publish`, `unpublish`.
 4. Click **Save**.
 
+### How Global Cache Invalidation Works in Practice:
+
 ```
-[ Editor Clicks Publish in Strapi ]
-               │
-               ▼
+[ Author Publishes Article in Strapi ]
+                  │
+                  ▼
 ┌────────────────────────────────────────────────────────┐
-│ Strapi fires HTTP POST to /api/revalidate              │
+│ Strapi fires automated POST to /api/revalidate         │
 └────────────────────────────────────────────────────────┘
-               │
-               ▼
+                  │
+                  ▼
 ┌────────────────────────────────────────────────────────┐
-│ Next.js purges 'blog-posts' & '/blog/my-slug' cache    │
+│ Next.js Server Purges Central VPS Cache                │
 └────────────────────────────────────────────────────────┘
-               │
-               ▼
+                  │
+                  ▼
 ┌────────────────────────────────────────────────────────┐
-│ Next visitor triggers background regeneration          │
-│ All subsequent visitors receive updated static HTML    │
+│ Every visitor globally (USA, Europe, Asia) receives    │
+│ the updated article immediately on their next visit    │
 └────────────────────────────────────────────────────────┘
 ```
+
+### Key Behavioral Rules:
+* **Global Immediate Effect**: Purging the server cache once at `/api/revalidate` updates the page for **all visitors worldwide**. Individual users never need to run this endpoint or clear their browser cache.
+* **Manual Triggering**: If deploying new markdown files via CLI scripts, you can trigger an instant global refresh by visiting `https://yourdomain.com/api/revalidate` in your browser.
 
 ---
 
@@ -226,7 +251,7 @@ After implementing tagged ISR and on-demand invalidation on a standard 4-core, 6
 | **TTFB (Time-To-First-Byte)** | 1,480 ms | **38 ms** | **97.4% faster** |
 | **Database Queries / Hit** | 3 queries | **0 queries** | **100% reduction** |
 | **Server CPU Load (100 req/s)** | 92% | **4%** | **23x less CPU load** |
-| **Cache Invalidation Latency** | Manual server restart | **< 150 ms (Webhook)** | Real-time |
+| **Cache Invalidation Latency** | Manual server restart | **< 150 ms (Webhook)** | Real-time global update |
 
 ---
 

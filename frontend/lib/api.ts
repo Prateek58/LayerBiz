@@ -1,6 +1,6 @@
 export async function fetchBlogPosts() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337'}/api/blog-posts?populate=*`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://127.0.0.1:1337'}/api/blog-posts?sort[0]=publishedAt:desc&sort[1]=createdAt:desc&sort[2]=id:desc&populate=*`, {
       headers: {
         Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
       },

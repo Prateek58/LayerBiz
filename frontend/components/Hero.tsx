@@ -17,26 +17,25 @@ const Hero: React.FC = () => {
 
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-500 text-[10px] font-bold tracking-widest uppercase mb-6 transition-all group cursor-pointer w-fit"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/20 text-orange-400 text-[10px] font-bold tracking-widest uppercase mb-6 transition-all group cursor-pointer w-fit"
         >
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
           </span>
-          <span>Explore 9 Engineering Logs</span>
+          <span>Explore Engineering Logs &amp; AI Blueprints</span>
           <i className="fas fa-arrow-right text-[9px] group-hover:translate-x-1 transition-transform"></i>
         </Link>
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white leading-tight tracking-tighter mb-6 sm:mb-8">
-          Code the Future <br />
+          Architect &amp; Build <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
-            Build the Vision
+            AI-Powered Micro-SaaS
           </span>
         </h1>
 
-        <p className="text-base sm:text-xl text-slate-400 mb-8 sm:mb-10 leading-relaxed max-w-2xl font-sans">
-          LayerBiz is a venture studio specializing in high-performance micro-SaaS.
-          We bridge the gap between complex engineering and elegant user experiences.
+        <p className="text-base sm:text-xl text-slate-300 mb-8 sm:mb-10 leading-relaxed max-w-2xl font-sans">
+          LayerBiz is a venture studio and engineering lab. We build practical AI workflows, edge architectures, and high-performance micro-SaaS tools empowering solopreneurs and modern agencies to build faster and scale with zero bloat.
         </p>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 flex-wrap">

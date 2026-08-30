@@ -32,7 +32,10 @@ async function fixPermissions() {
         'api::contact-inquiry.contact-inquiry.find',
         'api::newsletter-subscriber.newsletter-subscriber.create',
         'api::newsletter-subscriber.newsletter-subscriber.find',
-        'api::newsletter-subscriber.newsletter-subscriber.findOne'
+        'api::newsletter-subscriber.newsletter-subscriber.findOne',
+        'api::comment.comment.create',
+        'api::comment.comment.find',
+        'api::comment.comment.findOne'
       ];
 
       for (const action of actions) {

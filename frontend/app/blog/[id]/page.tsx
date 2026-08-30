@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Metadata } from 'next';
+import CommentSection from '@/components/CommentSection';
+import EngagementNewsletterModal from '@/components/EngagementNewsletterModal';
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
@@ -155,12 +157,22 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
       <div className="max-w-3xl mx-auto">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8 text-xs font-mono">
-          <Link
-            href="/blog"
-            className="text-slate-500 hover:text-white inline-flex items-center transition-colors"
-          >
-            <i className="fas fa-arrow-left mr-2"></i> Back to Logs
-          </Link>
+          <div className="flex items-center gap-2.5">
+            <Link
+              href="/"
+              className="text-slate-400 hover:text-white inline-flex items-center transition-colors bg-slate-900/60 border border-slate-800 px-2.5 py-1 rounded-md"
+              title="Return to Home"
+            >
+              <i className="fas fa-home mr-1.5 text-orange-400 text-[11px]"></i> Home
+            </Link>
+            <span className="text-slate-700 select-none">/</span>
+            <Link
+              href="/blog"
+              className="text-slate-400 hover:text-white inline-flex items-center transition-colors bg-slate-900/60 border border-slate-800 px-2.5 py-1 rounded-md"
+            >
+              <i className="fas fa-arrow-left mr-1.5 text-slate-500 text-[10px]"></i> Logs
+            </Link>
+          </div>
           {post.category && (
             <Link
               href="/blog"
@@ -309,6 +321,12 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
             )}
           </div>
         </article>
+
+        {/* 100% Spam-Free Verified Peer Review & Comments Section */}
+        <CommentSection postSlug={post.slug || id} postTitle={postTitle} />
+
+        {/* Smart Engagement-Based Newsletter Modal */}
+        <EngagementNewsletterModal />
 
         {/* Related Posts Footer Rail */}
         {relatedPosts.length > 0 && (

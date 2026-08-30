@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(16, 16)">
+    <!-- Scaled LayerBiz Triple Block Icon -->
+    <rect x="12" y="52" width="32" height="32" rx="4.5" fill="#f97316" />
+    <rect x="32" y="32" width="32" height="32" rx="4.5" fill="#f97316" fill-opacity="0.8" />
+    <rect x="52" y="12" width="32" height="32" rx="4.5" fill="#f97316" fill-opacity="0.6" />
+  </g>
+</svg>

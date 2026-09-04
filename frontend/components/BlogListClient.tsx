@@ -104,7 +104,7 @@ export default function BlogListClient({ posts }: BlogListClientProps) {
   const feedPosts = isDefaultView && processedPosts.length > 0 ? processedPosts.slice(1) : processedPosts;
 
   return (
-    <div className="flex-1 bg-[#0f172a] overflow-y-auto relative font-sans">
+    <div className="flex-1 bg-[#0f172a] overflow-y-auto relative font-sans pb-28 sm:pb-20">
       {/* 1. Header Section */}
       <div className="w-full pt-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-8">

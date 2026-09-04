@@ -1,0 +1,117 @@
+{
+  "promoConfig": {
+    "badgeText": "1 MO COST = 1 FULL YEAR",
+    "headline": "Super VPS Deal: Pay for 1 Month, Host for the Whole Year!",
+    "subheadline": "Limited allocation flash sale: Enterprise KVM cloud nodes starting at just $21.99/year (~$1.83/mo). Dedicated IPv4 & full root access included.",
+    "timerDays": 2,
+    "timerHours": 18,
+    "timerMinutes": 42,
+    "timerSeconds": 15,
+    "fixedEndDate": "",
+    "comparisonCard": {
+      "standardLabel": "Standard Rate",
+      "standardCost": "$21.99",
+      "standardDuration": "1 Mo",
+      "flashLabel": "Flash Promo",
+      "flashCost": "$21.99",
+      "flashDuration": "12 Mos"
+    }
+  },
+  "deals": [
+    {
+      "id": "1gb-kvm",
+      "name": "1 GB KVM VPS Special",
+      "badge": "Best Budget Deal",
+      "specs": [
+        "1 vCPU Core",
+        "1 GB RAM",
+        "20 GB Pure SSD RAID-10",
+        "3,000 GB Monthly Bandwidth",
+        "1 Gbps Public Port",
+        "Dedicated IPv4 & Full Root"
+      ],
+      "actualPriceYearly": 96,
+      "sellingPriceYearly": 21.99,
+      "actualPriceMonthly": 8,
+      "sellingPriceMonthly": 1.83,
+      "affiliateUrl": "https://my.racknerd.com/aff.php?aff=9042&pid=952",
+      "popular": false
+    },
+    {
+      "id": "2gb-kvm",
+      "name": "2 GB KVM VPS Special",
+      "badge": "Most Popular",
+      "specs": [
+        "2 vCPU Cores",
+        "2 GB RAM",
+        "35 GB Pure SSD RAID-10",
+        "5,000 GB Monthly Bandwidth",
+        "1 Gbps Public Port",
+        "Dedicated IPv4 & SolusVM"
+      ],
+      "actualPriceYearly": 180,
+      "sellingPriceYearly": 35.99,
+      "actualPriceMonthly": 15,
+      "sellingPriceMonthly": 2.99,
+      "affiliateUrl": "https://my.racknerd.com/aff.php?aff=9042&pid=953",
+      "popular": true
+    },
+    {
+      "id": "4gb-kvm",
+      "name": "4 GB KVM VPS Special",
+      "badge": "Developer Choice",
+      "specs": [
+        "3 vCPU Cores",
+        "4 GB RAM",
+        "60 GB Pure SSD RAID-10",
+        "7,000 GB Monthly Bandwidth",
+        "1 Gbps Public Port",
+        "Docker & Node Ready"
+      ],
+      "actualPriceYearly": 300,
+      "sellingPriceYearly": 59.99,
+      "actualPriceMonthly": 25,
+      "sellingPriceMonthly": 4.99,
+      "affiliateUrl": "https://my.racknerd.com/aff.php?aff=9042&pid=954",
+      "popular": false
+    },
+    {
+      "id": "6gb-kvm",
+      "name": "6 GB KVM VPS Special",
+      "badge": "Heavy Workloads",
+      "specs": [
+        "6 vCPU Cores",
+        "6 GB RAM",
+        "100 GB Pure SSD RAID-10",
+        "12,000 GB Monthly Bandwidth",
+        "1 Gbps Public Port",
+        "Multiple Datacenter Locations"
+      ],
+      "actualPriceYearly": 480,
+      "sellingPriceYearly": 89.99,
+      "actualPriceMonthly": 40,
+      "sellingPriceMonthly": 7.49,
+      "affiliateUrl": "https://my.racknerd.com/aff.php?aff=9042&pid=955",
+      "popular": false
+    },
+    {
+      "id": "8gb-kvm",
+      "name": "8 GB KVM VPS Special",
+      "badge": "Max Performance",
+      "specs": [
+        "7 vCPU Cores",
+        "8 GB RAM",
+        "150 GB Pure SSD RAID-10",
+        "20,000 GB (20TB) Bandwidth",
+        "1 Gbps Public Port",
+        "Dedicated Server Alternative"
+      ],
+      "actualPriceYearly": 720,
+      "sellingPriceYearly": 119.99,
+      "actualPriceMonthly": 60,
+      "sellingPriceMonthly": 9.99,
+      "affiliateUrl": "https://my.racknerd.com/aff.php?aff=9042&pid=956",
+      "popular": false
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import { fetchBlogPosts } from '@/lib/api';
 import { Metadata } from 'next';
 import BlogListClient from '@/components/BlogListClient';
+import VpsPromoBanner from '@/components/VpsPromoBanner';
 
 export const metadata: Metadata = {
   title: 'Engineering Logs & Architecture Deep Dives',
@@ -19,5 +20,10 @@ export const metadata: Metadata = {
 
 export default async function BlogPage() {
   const posts = await fetchBlogPosts();
-  return <BlogListClient posts={posts} />;
+  return (
+    <>
+      <BlogListClient posts={posts} />
+      <VpsPromoBanner showInArticleCard={false} />
+    </>
+  );
 }

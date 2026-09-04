@@ -4,7 +4,7 @@ import LogoBlockAnimator from './LogoBlockAnimator';
 
 const Hero: React.FC = () => {
   return (
-    <div className="flex-1 bg-[#0b1120] p-6 sm:p-12 flex flex-col justify-center relative overflow-hidden">
+    <div className="flex-1 bg-[#0b1120] p-6 sm:p-12 pb-28 sm:pb-16 flex flex-col justify-center relative overflow-hidden">
       {/* Decorative Grid */}
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"

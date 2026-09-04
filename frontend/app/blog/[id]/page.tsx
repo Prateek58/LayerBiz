@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { Metadata } from 'next';
 import CommentSection from '@/components/CommentSection';
 import EngagementNewsletterModal from '@/components/EngagementNewsletterModal';
+import VpsPromoBanner from '@/components/VpsPromoBanner';
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
@@ -145,7 +146,7 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
   };
 
   return (
-    <div className="flex-1 bg-[#0f172a] p-6 sm:p-12 overflow-y-auto">
+    <div className="flex-1 bg-[#0f172a] p-6 sm:p-12 pb-28 sm:pb-20 overflow-y-auto">
       {/* Inject Article JSON-LD for Google Rich Results */}
       <script
         type="application/ld+json"
@@ -199,6 +200,9 @@ export default async function BlogPostPage({ params }: { params: { id: string } 
               )}
             </div>
           </header>
+          
+          {/* Super VPS Hosting Flash Promo Banner & Sticky Urgency Widget */}
+          <VpsPromoBanner />
 
           <div className="prose prose-invert prose-pre:bg-transparent prose-pre:p-0 max-w-none space-y-6 text-slate-300 text-sm sm:text-base leading-loose">
             {post.content ? (

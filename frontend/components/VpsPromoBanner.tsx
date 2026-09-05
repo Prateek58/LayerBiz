@@ -2,6 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import vpsData from '@/data/vps-deals.json';
+import {
+  trackAffiliateClick,
+  trackPromoBlockClick,
+  trackPromoDealsView,
+} from '@/lib/analytics';
 
 export interface VpsDealRaw {
   id: string;
@@ -141,6 +146,65 @@ export default function VpsPromoBanner({ showInArticleCard = true }: VpsPromoBan
 
   const { promoConfig } = vpsData;
 
+  const handleToggleTopDeals = (trigger: 'card_body' | 'wow_button') => {
+    const nextState = !showTopDeals;
+    setShowTopDeals(nextState);
+    trackPromoBlockClick({
+      blockType: 'in_article_card',
+      action: nextState ? 'expand' : 'collapse',
+      trigger,
+      promoName: promoConfig.headline,
+    });
+    if (nextState) {
+      trackPromoDealsView({
+        blockType: 'in_article_card',
+        promoName: promoConfig.headline,
+        dealCount: COMPUTED_DEALS.length,
+      });
+    }
+  };
+
+  const handleToggleBottomExpanded = (trigger: 'footer_bar' | 'wow_button') => {
+    const nextState = !isBottomExpanded;
+    setIsBottomExpanded(nextState);
+    trackPromoBlockClick({
+      blockType: 'sticky_footer',
+      action: nextState ? 'expand' : 'collapse',
+      trigger,
+      promoName: promoConfig.headline,
+    });
+    if (nextState) {
+      trackPromoDealsView({
+        blockType: 'sticky_footer',
+        promoName: promoConfig.headline,
+        dealCount: COMPUTED_DEALS.length,
+      });
+    }
+  };
+
+  const handleToggleBottomCollapse = () => {
+    const nextState = !isBottomCollapsed;
+    setIsBottomCollapsed(nextState);
+    trackPromoBlockClick({
+      blockType: 'sticky_footer',
+      action: nextState ? 'minimize' : 'restore',
+      trigger: 'minimize_button',
+      promoName: promoConfig.headline,
+    });
+  };
+
+  const handleAffiliateClick = (deal: VpsDealComputed, placement: 'in_article_card' | 'sticky_footer') => {
+    trackAffiliateClick({
+      dealId: deal.id,
+      dealName: deal.name,
+      dealBadge: deal.badge,
+      dealPriceYearly: deal.sellingPriceYearly,
+      dealPriceMonthly: deal.sellingPriceMonthly,
+      affiliateUrl: deal.affiliateUrl,
+      placement,
+    });
+  };
+
   return (
     <>
       {/* 
@@ -153,7 +217,7 @@ export default function VpsPromoBanner({ showInArticleCard = true }: VpsPromoBan
       */}
       {showInArticleCard && (
         <div
-          onClick={() => setShowTopDeals(!showTopDeals)}
+          onClick={() => handleToggleTopDeals('card_body')}
           className="hidden sm:block my-6 rounded-2xl border-2 border-orange-500/50 hover:border-orange-500/80 bg-gradient-to-r from-[#1a110a] via-[#0f172a] to-[#090e1a] p-3.5 sm:p-5 shadow-[0_0_25px_rgba(249,115,22,0.22)] not-prose relative overflow-hidden cursor-pointer transition-all group"
         >
           {/* Subtle Ambient Glow */}
@@ -200,7 +264,7 @@ export default function VpsPromoBanner({ showInArticleCard = true }: VpsPromoBan
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setShowTopDeals(!showTopDeals);
+                    handleToggleTopDeals('wow_button');
                   }}
                   className="relative px-3.5 sm:px-4 py-2 rounded-xl text-xs font-mono font-black uppercase tracking-wider text-slate-950 bg-gradient-to-r from-amber-300 via-orange-400 to-amber-400 hover:brightness-110 active:scale-95 transition-all shadow-lg flex items-center gap-1.5 border border-amber-200 cursor-pointer"
                 >
@@ -333,6 +397,7 @@ export default function VpsPromoBanner({ showInArticleCard = true }: VpsPromoBan
                       href={deal.affiliateUrl}
                       target="_blank"
                       rel="nofollow sponsored noopener noreferrer"
+                      onClick={() => handleAffiliateClick(deal, 'in_article_card')}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider text-slate-950 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:brightness-110 active:scale-95 transition-all shadow-md shadow-orange-500/20 whitespace-nowrap font-bold"
                     >
                       <span>Claim Deal</span>
@@ -363,7 +428,7 @@ export default function VpsPromoBanner({ showInArticleCard = true }: VpsPromoBan
       >
         <div className="max-w-5xl mx-auto px-2 sm:px-4 pb-2 sm:pb-3">
           <div
-            onClick={() => setIsBottomExpanded(!isBottomExpanded)}
+            onClick={() => handleToggleBottomExpanded('footer_bar')}
             className="rounded-2xl border-2 border-orange-500/70 hover:border-orange-500 bg-[#090d16]/95 backdrop-blur-xl shadow-[0_-5px_30px_rgba(249,115,22,0.35)] p-2.5 sm:p-3.5 text-white cursor-pointer transition-all group"
           >
             
@@ -419,7 +484,7 @@ export default function VpsPromoBanner({ showInArticleCard = true }: VpsPromoBan
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setIsBottomExpanded(!isBottomExpanded);
+                      handleToggleBottomExpanded('wow_button');
                     }}
                     className="relative px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-mono font-black uppercase tracking-wider text-slate-950 bg-gradient-to-r from-amber-300 via-orange-400 to-amber-400 hover:brightness-110 active:scale-95 transition-all shadow-md flex items-center gap-1.5 border border-amber-200"
                   >
@@ -434,7 +499,7 @@ export default function VpsPromoBanner({ showInArticleCard = true }: VpsPromoBan
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsBottomCollapsed(!isBottomCollapsed);
+                    handleToggleBottomCollapse();
                   }}
                   title={isBottomCollapsed ? 'Expand bar' : 'Minimize bar'}
                   className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors text-xs"
@@ -500,6 +565,7 @@ export default function VpsPromoBanner({ showInArticleCard = true }: VpsPromoBan
                         href={deal.affiliateUrl}
                         target="_blank"
                         rel="nofollow sponsored noopener noreferrer"
+                        onClick={() => handleAffiliateClick(deal, 'sticky_footer')}
                         className="px-3.5 py-1.5 rounded text-[11px] font-mono font-bold uppercase text-slate-950 bg-gradient-to-r from-amber-400 to-orange-500 hover:brightness-110 active:scale-95 transition-all whitespace-nowrap shadow-sm shadow-orange-500/20 font-bold"
                       >
                         Claim Deal

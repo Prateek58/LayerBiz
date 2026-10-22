@@ -1,4 +1,4 @@
-# LayerBiz Agent Instructions (AGENTS.md)
+# LayerBiz Agent Instructions (AGENTS.md) 
 
 This file defines the core behavioral rules and standards for all AI pair programming assistants working on the LayerBiz codebase.
 
